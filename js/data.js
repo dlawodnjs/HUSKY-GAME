@@ -31,7 +31,7 @@ let state = {
     fatigue: 0,
     currentWeek: 1,
     currentDayIndex: 0,
-    maxWeeks: 52,
+    maxWeeks: 48,
     isAdult: false,
     tournamentWins: 0,
     gameOverReason: "",

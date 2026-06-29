@@ -61,7 +61,7 @@ function resetGame() {
         gold: 300, stamina: 50, stress: 0, obedience: 10, wildness: 30, affection: 20,
         strength: 10, gluttony: 20, charisma: 10, agility: 15, 
         intelligence: 10, sociality: 10, courage: 10, scent: 10, hygiene: 50,
-        fatigue: 0, currentWeek: 1, currentDayIndex: 0, maxWeeks: 52, isAdult: false, 
+        fatigue: 0, currentWeek: 1, currentDayIndex: 0, maxWeeks: 48, isAdult: false, 
         tournamentWins: 0, gameOverReason: "", consecutiveHighStressWeeks: 0, furniture: []
     };
     huskyState.expression = 'neutral';
