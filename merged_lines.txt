@@ -1,0 +1,10 @@
+﻿648:     // Determine expression based on stats if not forced by interaction
+660:         // Adult husky has different default if we had one, but we use the same sprite for now
+661:         // Growth stage logic is handled in renderHusky via scale and src path if needed
+810:                 if (state.currentWeek <= 12) pauseScale = 0.5; // ?熬곥룗???????                else if (state.currentWeek >= 26) pauseScale = 1.5; // ?繹먭퍒????????                
+991:     if (state.currentWeek >= 26) diffMult = 1.2; // ?繹먭퍒??    else if (state.currentWeek <= 12) diffMult = 0.8; // ?熬곥룗??    
+996:     // ?熬곥굥????⑤객臾?嶺뚳퐢?얍칰?    let isDanger = (state.stamina < 20 || state.stress >= 80);
+1001:     // ?熬곥굥????⑤객臾???????μ쪠?????怨뺤쭢 ?띠룆踰ㅿ쭛??????덉넮 嶺뚳퐣瑗??    if (isDanger && isHighRisk) {
+1169:     // ?熬곣뫗????怨쀬Ŧ??Fatigue) 嶺뚳퐢?얍칰?    if (state.fatigue >= 80) {
+1240:         state.fatigue = Math.max(state.fatigue - 5, 0); // ??? ?곌랜????        showEvent("?????怨쀫뱟! ?怨댄닊 1000G ??얜굣!");
+1258:         ui.endingImg.src = "assets/ending_destroyer_1782580583119.jpg"; // ?띠렮沅??????????琉얘덧 ??븐뼔??????嶺뚯쇎沅?    } else if(state.stress >= 100) {
