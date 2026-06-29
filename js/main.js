@@ -2,7 +2,7 @@
 
 function init() {
     updateStatsUI();
-    refreshScheduleOptions();
+    renderScheduleUI();
 
     document.getElementById('btn-start').addEventListener('click', startGame);
     document.getElementById('btn-restart').addEventListener('click', resetGame);
@@ -53,7 +53,7 @@ function startGame() {
         screens.main.classList.add('active');
     }, 500); // Wait for fade out
     updateStatsUI();
-    refreshScheduleOptions();
+    renderScheduleUI();
 }
 
 function resetGame() {
@@ -72,14 +72,16 @@ function resetGame() {
         setTimeout(() => screens.title.classList.add('active'), 10);
     }, 500);
     updateStatsUI();
-    refreshScheduleOptions();
+    weeklySchedule = [];
+    renderScheduleUI();
 }
 
 async function executeWeek() {
     try {
         ui.btnExecute.disabled = true;
-        const actions = Array.from(ui.scheduleSelects).map(s => parseInt(s.value));
-        const daySlots = document.querySelectorAll('.day-slot');
+        const actions = [...weeklySchedule];
+        weeklySchedule = [];
+        const daySlots = document.querySelectorAll('#schedule-list li');
         
         let statsAtStartOfWeek = {
             obedience: state.obedience, wildness: state.wildness, affection: state.affection,
@@ -143,7 +145,7 @@ async function executeWeek() {
         }
         
         updateStatsUI();
-        refreshScheduleOptions();
+        renderScheduleUI();
     } catch(e) {
         console.error("Error during executeWeek:", e);
     } finally {

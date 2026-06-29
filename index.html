@@ -187,17 +187,27 @@
                 <!-- Bottom: Schedule Panel -->
                 <div class="schedule-panel glass-panel">
                     <h3>주간 스케줄 설정</h3>
-                    <div class="schedule-days">
-                        <div class="day-slot"><label>월</label><select class="schedule-select" data-day="0"></select></div>
-                        <div class="day-slot"><label>화</label><select class="schedule-select" data-day="1"></select></div>
-                        <div class="day-slot"><label>수</label><select class="schedule-select" data-day="2"></select></div>
-                        <div class="day-slot"><label>목</label><select class="schedule-select" data-day="3"></select></div>
-                        <div class="day-slot"><label>금</label><select class="schedule-select" data-day="4"></select></div>
-                        <div class="day-slot"><label>토</label><select class="schedule-select" data-day="5"></select></div>
-                        <div class="day-slot"><label>일</label><select class="schedule-select" data-day="6"></select></div>
+                    <div class="schedule-layout">
+                        <!-- Left Panel: Selected Schedule -->
+                        <div class="schedule-left">
+                            <ul id="schedule-list" class="schedule-list">
+                                <!-- JS will populate this with 7 slots -->
+                            </ul>
+                            <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                                <button id="btn-undo-schedule" class="btn secondary btn-undo" disabled>마지막 지우기</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Panel: Schedule Selection Tool -->
+                        <div class="schedule-right">
+                            <h4 id="current-edit-day" class="current-edit-day">현재 선택: 월요일</h4>
+                            <div id="schedule-options" class="schedule-options-grid">
+                                <!-- JS will populate buttons for each available action -->
+                            </div>
+                        </div>
                     </div>
-                    <div class="action-buttons">
-                        <button id="btn-execute" class="btn primary">1주일 실행</button>
+                    <div class="action-buttons" style="margin-top: 20px;">
+                        <button id="btn-execute" class="btn primary" disabled>1주일 실행</button>
                         <button id="btn-shop" class="btn secondary">상점</button>
                     </div>
                 </div>

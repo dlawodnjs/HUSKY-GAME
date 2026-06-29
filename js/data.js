@@ -8,6 +8,25 @@ const ActionType = {
     BATH: 10, PUZZLE: 11, CAFE: 12, NIGHT_WALK: 13, TRUFFLE: 14, GUARD_TRAINING: 15
 };
 
+const actionNamesKR = {
+    [ActionType.FEED]: "밥 주기",
+    [ActionType.WALK]: "산책 가기",
+    [ActionType.TRAIN]: "훈련 하기",
+    [ActionType.PLAY]: "놀아 주기",
+    [ActionType.REST]: "휴식 하기",
+    [ActionType.ADVANCED_TRAIN]: "고급 훈련",
+    [ActionType.OBSTACLE_COURSE]: "장애물 달리기",
+    [ActionType.SLED_PULLING]: "썰매 끌기",
+    [ActionType.WORK_GUARD]: "집지키기 알바",
+    [ActionType.WORK_MODEL]: "모델 알바",
+    [ActionType.BATH]: "목욕 시키기",
+    [ActionType.PUZZLE]: "실타래 퍼즐 풀기",
+    [ActionType.CAFE]: "애견 카페 방문",
+    [ActionType.NIGHT_WALK]: "야간 산책",
+    [ActionType.TRUFFLE]: "트러플 찾기 알바",
+    [ActionType.GUARD_TRAINING]: "특수 구조 훈련"
+};
+
 const days = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"];
 
 // Initial global state

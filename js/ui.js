@@ -29,7 +29,10 @@ const ui = {
     huskyNameDisplay: document.getElementById('husky-name-display'),
     huskyStageDisplay: document.getElementById('husky-stage-display'),
     
-    scheduleSelects: document.querySelectorAll('.schedule-select'),
+    scheduleList: document.getElementById('schedule-list'),
+    scheduleOptions: document.getElementById('schedule-options'),
+    currentEditDay: document.getElementById('current-edit-day'),
+    btnUndoSchedule: document.getElementById('btn-undo-schedule'),
     btnExecute: document.getElementById('btn-execute'),
     btnShop: document.getElementById('btn-shop'),
     btnCloseShop: document.getElementById('btn-close-shop'),
@@ -115,58 +118,72 @@ function updateStatsUI() {
     }
 }
 
-function refreshScheduleOptions() {
-    ui.scheduleSelects.forEach(select => {
-        const prevVal = select.value;
-        if (select.options.length === 0) {
-            select.innerHTML = `
-                <option value="${ActionType.FEED}">밥 주기</option>
-                <option value="${ActionType.WALK}">산책 가기</option>
-                <option value="${ActionType.TRAIN}">훈련 하기</option>
-                <option value="${ActionType.PLAY}">놀아 주기</option>
-                <option value="${ActionType.REST}">휴식 하기</option>
-                <option value="${ActionType.BATH}">목욕 시키기</option>
-                <option value="${ActionType.WORK_GUARD}">집지키기 알바</option>
-                <option value="${ActionType.ADVANCED_TRAIN}" class="adv-opt" style="display:none">고급 훈련</option>
-                <option value="${ActionType.OBSTACLE_COURSE}" class="adv-opt" style="display:none">장애물 달리기</option>
-                <option value="${ActionType.SLED_PULLING}" class="adv-opt" style="display:none">썰매 끌기</option>
-                <option value="${ActionType.WORK_MODEL}" class="adv-opt" style="display:none">모델 알바</option>
-                <option value="${ActionType.PUZZLE}" class="adv-opt" style="display:none">실타래 퍼즐 풀기</option>
-                <option value="${ActionType.CAFE}" class="adv-opt" style="display:none">애견 카페 방문</option>
-                <option value="${ActionType.NIGHT_WALK}" class="adv-opt" style="display:none">야간 산책</option>
-                <option value="${ActionType.TRUFFLE}" class="adv-opt" style="display:none">트러플 찾기 알바</option>
-                <option value="${ActionType.GUARD_TRAINING}" class="adv-opt" style="display:none">특수 구조 훈련</option>
-            `;
-        }
+let weeklySchedule = [];
 
-        const advTrain = select.querySelector(`option[value="${ActionType.ADVANCED_TRAIN}"]`);
-        const obstacle = select.querySelector(`option[value="${ActionType.OBSTACLE_COURSE}"]`);
-        const sled = select.querySelector(`option[value="${ActionType.SLED_PULLING}"]`);
-        const model = select.querySelector(`option[value="${ActionType.WORK_MODEL}"]`);
-        const puzzle = select.querySelector(`option[value="${ActionType.PUZZLE}"]`);
-        const cafe = select.querySelector(`option[value="${ActionType.CAFE}"]`);
-        const nightWalk = select.querySelector(`option[value="${ActionType.NIGHT_WALK}"]`);
-        const truffle = select.querySelector(`option[value="${ActionType.TRUFFLE}"]`);
-        const guardTraining = select.querySelector(`option[value="${ActionType.GUARD_TRAINING}"]`);
-
-        if (advTrain) advTrain.style.display = state.obedience >= 30 ? 'block' : 'none';
-        if (obstacle) obstacle.style.display = state.obedience >= 50 ? 'block' : 'none';
-        if (sled) sled.style.display = state.obedience >= 80 ? 'block' : 'none';
-        if (model) model.style.display = state.obedience >= 40 ? 'block' : 'none';
-        if (puzzle) puzzle.style.display = state.intelligence >= 30 ? 'block' : 'none';
-        if (cafe) cafe.style.display = state.sociality >= 40 ? 'block' : 'none';
-        if (nightWalk) nightWalk.style.display = state.courage >= 50 ? 'block' : 'none';
-        if (truffle) truffle.style.display = state.scent >= 70 ? 'block' : 'none';
-        if (guardTraining) guardTraining.style.display = (state.intelligence >= 60 && state.courage >= 60) ? 'block' : 'none';
-        
-        const selectedOpt = select.querySelector(`option[value="${prevVal}"]`);
-        if(selectedOpt && selectedOpt.style.display !== 'none') {
-            select.value = prevVal;
+function renderScheduleUI() {
+    ui.scheduleList.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+        const li = document.createElement('li');
+        if (i < weeklySchedule.length) {
+            const actionId = weeklySchedule[i];
+            li.innerHTML = `<span>${days[i]}</span> <strong>${actionNamesKR[actionId]}</strong>`;
+            li.classList.add('filled');
+        } else if (i === weeklySchedule.length) {
+            li.innerHTML = `<span>${days[i]}</span> <span>선택 중...</span>`;
+            li.classList.add('active-day');
         } else {
-            select.value = ActionType.FEED;
+            li.innerHTML = `<span>${days[i]}</span> <span>미선택</span>`;
+            li.classList.add('empty');
         }
-    });
+        ui.scheduleList.appendChild(li);
+    }
+    
+    const currentDayIndex = weeklySchedule.length;
+    if (currentDayIndex < 7) {
+        ui.currentEditDay.innerText = `현재 선택: ${days[currentDayIndex]}`;
+        ui.currentEditDay.style.color = 'var(--primary-color)';
+        
+        let availableActions = [
+            ActionType.FEED, ActionType.WALK, ActionType.TRAIN, ActionType.PLAY, 
+            ActionType.REST, ActionType.BATH, ActionType.WORK_GUARD
+        ];
+        
+        if (state.isAdult) {
+            availableActions.push(
+                ActionType.ADVANCED_TRAIN, ActionType.OBSTACLE_COURSE, ActionType.SLED_PULLING,
+                ActionType.WORK_MODEL, ActionType.PUZZLE, ActionType.CAFE, 
+                ActionType.NIGHT_WALK, ActionType.TRUFFLE, ActionType.GUARD_TRAINING
+            );
+        }
+        
+        ui.scheduleOptions.innerHTML = '';
+        availableActions.forEach(action => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-action';
+            btn.innerText = actionNamesKR[action];
+            btn.onclick = () => {
+                weeklySchedule.push(action);
+                renderScheduleUI();
+            };
+            ui.scheduleOptions.appendChild(btn);
+        });
+    } else {
+        ui.currentEditDay.innerText = `주간 스케줄 선택 완료!`;
+        ui.currentEditDay.style.color = '#10b981';
+        ui.scheduleOptions.innerHTML = '<p style="text-align: center; color: #6b7280; grid-column: 1 / -1; margin-top: 20px;">모든 요일의 스케줄이 채워졌습니다.<br><strong>1주일 실행</strong> 버튼을 눌러주세요.</p>';
+    }
+    
+    ui.btnUndoSchedule.disabled = weeklySchedule.length === 0;
+    ui.btnExecute.disabled = weeklySchedule.length < 7;
 }
+
+// Add event listener for undo button
+ui.btnUndoSchedule.addEventListener('click', () => {
+    if (weeklySchedule.length > 0) {
+        weeklySchedule.pop();
+        renderScheduleUI();
+    }
+});
 
 function showEvent(text) {
     ui.inlineEventText.innerText = text;
