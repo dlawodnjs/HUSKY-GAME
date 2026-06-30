@@ -149,11 +149,15 @@ function renderScheduleUI() {
         ];
         
         if (state.isAdult) {
-            availableActions.push(
-                ActionType.ADVANCED_TRAIN, ActionType.OBSTACLE_COURSE, ActionType.SLED_PULLING,
-                ActionType.WORK_MODEL, ActionType.PUZZLE, ActionType.CAFE, 
-                ActionType.NIGHT_WALK, ActionType.TRUFFLE, ActionType.GUARD_TRAINING
-            );
+            if (state.obedience >= 30) availableActions.push(ActionType.ADVANCED_TRAIN);
+            if (state.obedience >= 50) availableActions.push(ActionType.OBSTACLE_COURSE);
+            if (state.obedience >= 80) availableActions.push(ActionType.SLED_PULLING);
+            if (state.obedience >= 40) availableActions.push(ActionType.WORK_MODEL);
+            if (state.intelligence >= 30) availableActions.push(ActionType.PUZZLE);
+            if (state.sociality >= 40) availableActions.push(ActionType.CAFE);
+            if (state.courage >= 50) availableActions.push(ActionType.NIGHT_WALK);
+            if (state.scent >= 70) availableActions.push(ActionType.TRUFFLE);
+            if (state.intelligence >= 60 && state.courage >= 60) availableActions.push(ActionType.GUARD_TRAINING);
         }
         
         ui.scheduleOptions.innerHTML = '';
