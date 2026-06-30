@@ -234,7 +234,7 @@ function processAction(action) {
         case ActionType.CAFE:
             if (state.gold >= 10) {
                 state.gold -= 10;
-                updateGrowthStat('sociality', 3 * diffMult);
+                updateGrowthStat('sociality', 2 * diffMult); // Changed from 3 to 2
                 updateGrowthStat('charisma', 1);
                 updateGrowthStat('affection', 1);
                 updateGrowthStat('wildness', -2);
@@ -243,6 +243,14 @@ function processAction(action) {
                 showEvent("골드가 부족하여 카페에 가지 못했습니다.");
                 state.stress = Math.min(state.stress + 4, 100);
             }
+            break;
+        case ActionType.NOSEWORK:
+            updateGrowthStat('scent', 1 * diffMult);
+            updateGrowthStat('intelligence', 1 * diffMult);
+            updateGrowthStat('wildness', -1);
+            state.stamina = Math.max(state.stamina - 2, 0);
+            state.stress = Math.max(state.stress - 1, 0);
+            state.fatigue = Math.min(state.fatigue + 1, 100);
             break;
         case ActionType.NIGHT_WALK:
             updateGrowthStat('courage', 2 * diffMult);

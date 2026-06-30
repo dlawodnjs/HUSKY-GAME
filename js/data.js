@@ -5,7 +5,8 @@ const ActionType = {
     FEED: 0, WALK: 1, TRAIN: 2, PLAY: 3, REST: 4,
     ADVANCED_TRAIN: 5, OBSTACLE_COURSE: 6, SLED_PULLING: 7,
     WORK_GUARD: 8, WORK_MODEL: 9,
-    BATH: 10, PUZZLE: 11, CAFE: 12, NIGHT_WALK: 13, TRUFFLE: 14, GUARD_TRAINING: 15
+    BATH: 10, PUZZLE: 11, CAFE: 12, NIGHT_WALK: 13, TRUFFLE: 14, GUARD_TRAINING: 15,
+    NOSEWORK: 16
 };
 
 const actionNamesKR = {
@@ -24,7 +25,8 @@ const actionNamesKR = {
     [ActionType.CAFE]: "애견 카페 방문",
     [ActionType.NIGHT_WALK]: "야간 산책",
     [ActionType.TRUFFLE]: "트러플 찾기 알바",
-    [ActionType.GUARD_TRAINING]: "특수 구조 훈련"
+    [ActionType.GUARD_TRAINING]: "특수 구조 훈련",
+    [ActionType.NOSEWORK]: "노즈워크 놀이"
 };
 
 const days = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"];

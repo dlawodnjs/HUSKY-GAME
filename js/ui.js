@@ -145,18 +145,18 @@ function renderScheduleUI() {
         
         let availableActions = [
             ActionType.FEED, ActionType.WALK, ActionType.TRAIN, ActionType.PLAY, 
-            ActionType.REST, ActionType.BATH, ActionType.WORK_GUARD
+            ActionType.REST, ActionType.BATH, ActionType.WORK_GUARD, ActionType.NOSEWORK
         ];
         
         if (state.isAdult) {
             if (state.obedience >= 30) availableActions.push(ActionType.ADVANCED_TRAIN);
-            if (state.obedience >= 50) availableActions.push(ActionType.OBSTACLE_COURSE);
-            if (state.obedience >= 80) availableActions.push(ActionType.SLED_PULLING);
-            if (state.obedience >= 40) availableActions.push(ActionType.WORK_MODEL);
+            if (state.agility >= 30) availableActions.push(ActionType.OBSTACLE_COURSE);
+            if (state.strength >= 40) availableActions.push(ActionType.SLED_PULLING);
+            if (state.charisma >= 30) availableActions.push(ActionType.WORK_MODEL);
             if (state.intelligence >= 30) availableActions.push(ActionType.PUZZLE);
-            if (state.sociality >= 40) availableActions.push(ActionType.CAFE);
-            if (state.courage >= 50) availableActions.push(ActionType.NIGHT_WALK);
-            if (state.scent >= 70) availableActions.push(ActionType.TRUFFLE);
+            if (state.sociality >= 30) availableActions.push(ActionType.CAFE);
+            if (state.courage >= 30) availableActions.push(ActionType.NIGHT_WALK);
+            if (state.scent >= 30) availableActions.push(ActionType.TRUFFLE);
             if (state.intelligence >= 60 && state.courage >= 60) availableActions.push(ActionType.GUARD_TRAINING);
         }
         
