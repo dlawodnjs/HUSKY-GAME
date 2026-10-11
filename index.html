@@ -14,7 +14,10 @@
             <div class="title-content glass-panel">
                 <h1>허스키 메이커</h1>
                 <p>나만의 귀여운 아기 허스키를 훌륭하게 키워보세요!</p>
-                <button id="btn-start" class="btn primary">게임 시작</button>
+                <div class="action-buttons">
+                    <button id="btn-start" class="btn primary">게임 시작</button>
+                    <button class="btn secondary btn-open-codex">엔딩 도감</button>
+                </div>
             </div>
         </section>
 
@@ -24,23 +27,8 @@
                 <!-- Left: Status Panel -->
                 <div class="status-panel glass-panel">
                     <div class="gold-display">💰 보유 골드: <span id="stat-gold">500</span> G</div>
-                    <div class="stats-grid">
-                        <div class="stat-item" style="grid-column: span 2; background: rgba(239, 68, 68, 0.2);"><span class="label">배고픔</span><span class="value" id="stat-hunger" style="color: #ef4444; font-weight: bold;">0</span></div>
-                        <div class="stat-item"><span class="label">체력</span><span class="value" id="stat-stamina">50</span></div>
-                        <div class="stat-item"><span class="label">스트레스</span><span class="value" id="stat-stress">0</span></div>
-                        <div class="stat-item"><span class="label">피로도</span><span class="value" id="stat-fatigue" style="color: #ef4444;">0</span></div>
-                        <div class="stat-item"><span class="label">청결도</span><span class="value" id="stat-hygiene">50</span></div>
-                        <div class="stat-item"><span class="label">복종도</span><span class="value" id="stat-obedience">10</span></div>
-                        <div class="stat-item"><span class="label">야성</span><span class="value" id="stat-wildness">30</span></div>
-                        <div class="stat-item"><span class="label">친밀도</span><span class="value" id="stat-affection">20</span></div>
-                        <div class="stat-item"><span class="label">근력</span><span class="value" id="stat-strength">10</span></div>
-                        <div class="stat-item"><span class="label">식탐</span><span class="value" id="stat-gluttony">20</span></div>
-                        <div class="stat-item"><span class="label">매력</span><span class="value" id="stat-charisma">10</span></div>
-                        <div class="stat-item"><span class="label">민첩성</span><span class="value" id="stat-agility">15</span></div>
-                        <div class="stat-item"><span class="label">지능</span><span class="value" id="stat-intelligence">10</span></div>
-                        <div class="stat-item"><span class="label">사회성</span><span class="value" id="stat-sociality">10</span></div>
-                        <div class="stat-item"><span class="label">용기</span><span class="value" id="stat-courage">10</span></div>
-                        <div class="stat-item"><span class="label">후각</span><span class="value" id="stat-scent">10</span></div>
+                    <div id="stats-panel" class="stats-panel-body">
+                        <!-- JS renders condition and growth stats -->
                     </div>
                 </div>
 
@@ -209,6 +197,7 @@
                     <div class="action-buttons" style="margin-top: 10px;">
                         <button id="btn-execute" class="btn primary" disabled>1주일 실행</button>
                         <button id="btn-shop" class="btn secondary">상점</button>
+                        <button class="btn secondary btn-open-codex">도감</button>
                     </div>
                 </div>
             </div>
@@ -283,12 +272,26 @@
         <!-- Ending Screen -->
         <section id="ending-screen" class="screen">
             <div class="ending-content glass-panel">
+                <p id="ending-new" class="ending-new hidden">✨ 새로운 엔딩이 도감에 등록되었습니다!</p>
                 <h1 id="ending-title">엔딩</h1>
                 <img id="ending-image" src="" alt="Ending" class="ending-img">
                 <p id="ending-desc"></p>
-                <button id="btn-restart" class="btn primary">타이틀로 돌아가기</button>
+                <div class="action-buttons">
+                    <button id="btn-restart" class="btn primary">타이틀로 돌아가기</button>
+                    <button class="btn secondary btn-open-codex">엔딩 도감</button>
+                </div>
             </div>
         </section>
+
+        <!-- Ending Codex Modal -->
+        <div id="codex-modal" class="modal hidden">
+            <div class="modal-content glass-panel codex-content">
+                <h3>엔딩 도감 <span id="codex-count" class="codex-count"></span></h3>
+                <p class="codex-help">막대는 지금 허스키의 스탯이 조건에 얼마나 가까운지 보여줍니다. 여러 엔딩 조건을 동시에 만족하면 가장 여유 있게 넘긴 엔딩이 나옵니다.</p>
+                <div id="codex-list" class="codex-list"></div>
+                <button id="btn-close-codex" class="btn">닫기</button>
+            </div>
+        </div>
     </div>
 
     <script src="js/data.js"></script>
