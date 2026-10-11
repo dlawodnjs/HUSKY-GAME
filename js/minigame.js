@@ -85,12 +85,11 @@ function endMinigame() {
         
         if(minigameScore >= 30) {
             showEvent("대성공! 아주 훌륭한 성과를 거두었습니다.");
-            updateGrowthStat('agility', 15);
-            updateGrowthStat('strength', 15);
+            updateGrowthStat('strength', 20);
             state.gold += 100;
         } else if(minigameScore >= 15) {
             showEvent("성공! 꽤 잘했습니다.");
-            updateGrowthStat('agility', 10);
+            updateGrowthStat('strength', 10);
             state.gold += 50;
         } else {
             showEvent("실패... 연습이 더 필요하겠네요.");

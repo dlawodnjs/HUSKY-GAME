@@ -1,6 +1,7 @@
 // --- js/main.js ---
 
 function init() {
+    renderStatsPanel();
     updateStatsUI();
     renderScheduleUI();
 
@@ -39,6 +40,9 @@ function init() {
     });
 
     ui.btnMinigameClick.addEventListener('click', handleMinigameClick);
+
+    document.querySelectorAll('.btn-open-codex').forEach(btn => btn.addEventListener('click', openCodex));
+    ui.btnCloseCodex.addEventListener('click', () => ui.codexModal.classList.add('hidden'));
     
     // Show title screen first
     screens.title.style.display = 'flex';
@@ -57,13 +61,7 @@ function startGame() {
 }
 
 function resetGame() {
-    state = {
-        gold: 300, stamina: 50, stress: 0, obedience: 10, wildness: 30, affection: 20,
-        strength: 10, gluttony: 20, charisma: 10, agility: 15, 
-        intelligence: 10, sociality: 10, courage: 10, scent: 10, hygiene: 50,
-        fatigue: 0, currentWeek: 1, currentDayIndex: 0, maxWeeks: 48, isAdult: false, 
-        tournamentWins: 0, gameOverReason: "", consecutiveHighStressWeeks: 0, furniture: []
-    };
+    state = createInitialState();
     huskyState.expression = 'neutral';
     screens.ending.classList.remove('active');
     setTimeout(() => {
@@ -83,12 +81,8 @@ async function executeWeek() {
         weeklySchedule = [];
         const daySlots = document.querySelectorAll('#schedule-list li');
         
-        let statsAtStartOfWeek = {
-            obedience: state.obedience, wildness: state.wildness, affection: state.affection,
-            strength: state.strength, gluttony: state.gluttony, charisma: state.charisma,
-            agility: state.agility, intelligence: state.intelligence, sociality: state.sociality,
-            courage: state.courage, scent: state.scent, hygiene: state.hygiene
-        };
+        let statsAtStartOfWeek = {};
+        growthStats.forEach(key => statsAtStartOfWeek[key] = state[key]);
 
         for(let i=0; i<actions.length; i++) {
             state.currentDayIndex = i;
@@ -163,10 +157,10 @@ function processAction(action) {
         case ActionType.FEED:
             if (state.gold >= feedCost) {
                 state.gold -= feedCost;
-                updateGrowthStat('gluttony', 1 * diffMult);
+                state.feedCount++;
                 updateGrowthStat('affection', 1 * diffMult);
-                updateGrowthStat('hygiene', -1);
                 updateGrowthStat('wildness', -1);
+                updateGrowthStat('hygiene', -1);
                 state.stamina = Math.min(state.stamina + 3, 100);
                 state.stress = Math.max(state.stress - 1, 0);
                 state.hunger = Math.max(state.hunger - 10, 0);
@@ -178,12 +172,12 @@ function processAction(action) {
             }
             break;
         case ActionType.WALK:
-            updateGrowthStat('agility', 1 * diffMult);
+            updateGrowthStat('strength', 1 * diffMult);
             updateGrowthStat('affection', 1);
-            updateGrowthStat('sociality', 1);
+            updateGrowthStat('charisma', 1);
             updateGrowthStat('wildness', 1);
-            updateGrowthStat('hygiene', -2);
             updateGrowthStat('obedience', -1);
+            updateGrowthStat('hygiene', -2);
             state.stamina = Math.max(state.stamina - 3, 0);
             state.stress = Math.max(state.stress - 2, 0);
             break;
@@ -201,7 +195,7 @@ function processAction(action) {
             let playMult = state.furniture.includes('toybox') ? 1.5 : 1.0;
             updateGrowthStat('affection', Math.ceil(2 * playMult));
             updateGrowthStat('wildness', 1);
-            updateGrowthStat('agility', 1);
+            updateGrowthStat('strength', 1);
             updateGrowthStat('obedience', -1);
             updateGrowthStat('intelligence', -1);
             state.stamina = Math.max(state.stamina - 3, 0);
@@ -211,14 +205,13 @@ function processAction(action) {
             state.stamina = Math.min(state.stamina + 8, 100);
             state.stress = Math.max(state.stress - 3, 0);
             state.fatigue = Math.max(state.fatigue - 4, 0);
-            updateGrowthStat('gluttony', 1);
-            updateGrowthStat('agility', -1);
+            updateGrowthStat('strength', -1);
             break;
         case ActionType.BATH:
-            updateGrowthStat('hygiene', 10);
             updateGrowthStat('charisma', 1);
             updateGrowthStat('affection', -1);
             updateGrowthStat('wildness', -1);
+            updateGrowthStat('hygiene', 10);
             state.stamina = Math.max(state.stamina - 3, 0);
             state.stress = Math.min(state.stress + 3, 100);
             break;
@@ -226,7 +219,7 @@ function processAction(action) {
             updateGrowthStat('intelligence', 2 * diffMult);
             updateGrowthStat('obedience', 1);
             updateGrowthStat('wildness', -1);
-            updateGrowthStat('agility', -1);
+            updateGrowthStat('strength', -1);
             state.stamina = Math.max(state.stamina - 2, 0);
             state.stress = Math.min(state.stress + 2, 100);
             state.fatigue = Math.min(state.fatigue + 2, 100);
@@ -234,8 +227,7 @@ function processAction(action) {
         case ActionType.CAFE:
             if (state.gold >= 10) {
                 state.gold -= 10;
-                updateGrowthStat('sociality', 2 * diffMult); // Changed from 3 to 2
-                updateGrowthStat('charisma', 1);
+                updateGrowthStat('charisma', 2 * diffMult);
                 updateGrowthStat('affection', 1);
                 updateGrowthStat('wildness', -2);
                 state.stress = Math.max(state.stress - 4, 0);
@@ -245,20 +237,18 @@ function processAction(action) {
             }
             break;
         case ActionType.NOSEWORK:
-            updateGrowthStat('scent', 1 * diffMult);
             updateGrowthStat('intelligence', 1 * diffMult);
-            updateGrowthStat('wildness', -1);
+            updateGrowthStat('wildness', 1 * diffMult);
             state.stamina = Math.max(state.stamina - 2, 0);
             state.stress = Math.max(state.stress - 1, 0);
             state.fatigue = Math.min(state.fatigue + 1, 100);
             break;
         case ActionType.NIGHT_WALK:
-            updateGrowthStat('courage', 2 * diffMult);
-            updateGrowthStat('wildness', 2);
-            updateGrowthStat('agility', 1);
-            updateGrowthStat('hygiene', -3);
+            updateGrowthStat('wildness', 3 * diffMult);
+            updateGrowthStat('strength', 1);
             updateGrowthStat('obedience', -1);
             updateGrowthStat('affection', -1);
+            updateGrowthStat('hygiene', -3);
             state.stamina = Math.max(state.stamina - 5, 0);
             state.stress = Math.min(state.stress + 1, 100);
             state.fatigue = Math.min(state.fatigue + 3, 100);
@@ -268,10 +258,10 @@ function processAction(action) {
             }
             break;
         case ActionType.TRUFFLE:
-            updateGrowthStat('scent', 2 * diffMult);
+            updateGrowthStat('intelligence', 2 * diffMult);
             updateGrowthStat('wildness', 1);
-            updateGrowthStat('hygiene', -4);
             updateGrowthStat('obedience', -1);
+            updateGrowthStat('hygiene', -4);
             state.stamina = Math.max(state.stamina - 6, 0);
             state.stress = Math.min(state.stress + 4, 100);
             state.fatigue = Math.min(state.fatigue + 4, 100);
@@ -281,11 +271,10 @@ function processAction(action) {
             break;
         case ActionType.GUARD_TRAINING:
             updateGrowthStat('obedience', 2 * diffMult);
-            updateGrowthStat('courage', 2 * diffMult);
-            updateGrowthStat('intelligence', 1 * diffMult);
+            updateGrowthStat('intelligence', 2 * diffMult);
             updateGrowthStat('strength', 1 * diffMult);
             updateGrowthStat('affection', -2);
-            updateGrowthStat('sociality', -1);
+            updateGrowthStat('charisma', -1);
             state.stamina = Math.max(state.stamina - 8, 0);
             state.stress = Math.min(state.stress + 5, 100);
             state.fatigue = Math.min(state.fatigue + 4, 100);
@@ -293,7 +282,6 @@ function processAction(action) {
         case ActionType.ADVANCED_TRAIN:
             updateGrowthStat('obedience', 2 * diffMult);
             updateGrowthStat('strength', 2 * diffMult);
-            updateGrowthStat('agility', 1 * diffMult);
             updateGrowthStat('affection', -1);
             updateGrowthStat('wildness', -1);
             state.stamina = Math.max(state.stamina - 5, 0);
@@ -301,9 +289,8 @@ function processAction(action) {
             state.fatigue = Math.min(state.fatigue + 3, 100);
             break;
         case ActionType.OBSTACLE_COURSE:
-            updateGrowthStat('agility', 2 * diffMult);
-            updateGrowthStat('strength', 1 * diffMult);
-            updateGrowthStat('courage', 1 * diffMult);
+            updateGrowthStat('strength', 2 * diffMult);
+            updateGrowthStat('wildness', 1 * diffMult);
             updateGrowthStat('obedience', -1);
             state.stamina = Math.max(state.stamina - 5, 0);
             state.stress = Math.min(state.stress + 3, 100);
@@ -312,7 +299,6 @@ function processAction(action) {
         case ActionType.SLED_PULLING:
             updateGrowthStat('strength', 3 * diffMult);
             updateGrowthStat('obedience', 1 * diffMult);
-            updateGrowthStat('wildness', -1);
             updateGrowthStat('charisma', -1);
             state.stamina = Math.max(state.stamina - 8, 0);
             state.stress = Math.min(state.stress + 5, 100);
@@ -321,10 +307,9 @@ function processAction(action) {
             break;
         case ActionType.WORK_GUARD:
             updateGrowthStat('wildness', 1 * diffMult);
-            updateGrowthStat('courage', 1 * diffMult);
             updateGrowthStat('strength', 1 * diffMult);
             updateGrowthStat('affection', -1);
-            updateGrowthStat('sociality', -1);
+            updateGrowthStat('charisma', -1);
             state.stamina = Math.max(state.stamina - 4, 0);
             state.stress = Math.min(state.stress + 3, 100);
             state.fatigue = Math.min(state.fatigue + 3, 100);
