@@ -5,7 +5,7 @@ extends Node3D
 ## 네트워크는 다음 단계에서 붙인다. 모든 허스키는 set_input()으로만 움직이므로 그대로 연결 가능.
 
 const T = preload("res://scripts/tuning.gd")
-const LevelScript = preload("res://scripts/test_level.gd")
+const LEVELS := [preload("res://scripts/test_level.gd"), preload("res://scripts/lane_level.gd")]
 const SledScript = preload("res://scripts/sled.gd")
 const HuskyScript = preload("res://scripts/husky.gd")
 const RopeScript = preload("res://scripts/rope.gd")
@@ -24,6 +24,7 @@ var ropes: Array = []
 var cargos: Array = []
 var rig: Node3D
 
+var level_index := 1         # 0 물리 테스트 맵, 1 세 갈래 길 (L 키로 바꿈)
 var controlled := 0
 var bot_mode := 1
 var state := "play"           # play / failed / delivered
@@ -56,7 +57,7 @@ func start_stage() -> void:
 	world = Node3D.new()
 	add_child(world)
 
-	level = LevelScript.new()
+	level = LEVELS[level_index].new()
 	world.add_child(level)
 	sled = SledScript.new()
 	world.add_child(sled)
@@ -122,6 +123,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				bot_mode = (bot_mode + 1) % BOT_MODES.size()
 			KEY_R:
 				start_stage()
+			KEY_L:
+				level_index = (level_index + 1) % LEVELS.size()
+				start_stage()
 			KEY_ESCAPE:
 				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
@@ -183,7 +187,7 @@ func _process(_delta: float) -> void:
 		return
 	var h = huskies[controlled]
 	_cargo_label.text = "Cargo %d / %d     %.1f s" % [cargo_left(), T.CARGO_COUNT, elapsed]
-	_info_label.text = "You: P%d %s\nBots: %s  [B]" % [controlled + 1, SEAT_NAMES[controlled], BOT_MODES[bot_mode]]
+	_info_label.text = "Map: %s  [L]\nYou: P%d %s\nBots: %s  [B]" % [level.level_name, controlled + 1, SEAT_NAMES[controlled], BOT_MODES[bot_mode]]
 	_stamina_bar.value = h.stamina
 	_stamina_bar.modulate = Color(1, 0.5, 0.4) if h.exhausted else Color.WHITE
 	var dbg := "Sled speed %.1f m/s%s\n" % [sled.linear_velocity.length(), "  ICE" if sled.on_ice else ""]
@@ -222,7 +226,7 @@ func _build_hud() -> void:
 	var hud := CanvasLayer.new()
 	add_child(hud)
 	_cargo_label = _label(hud, 30, Vector2(24, 18), Vector2(600, 50))
-	_info_label = _label(hud, 20, Vector2(1100, 18), Vector2(480, 60))
+	_info_label = _label(hud, 20, Vector2(1100, 18), Vector2(480, 90))
 	_info_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_center_label = _label(hud, 44, Vector2(0, 260), Vector2(1600, 140))
 	_center_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -243,7 +247,7 @@ func _build_hud() -> void:
 
 	var help := _label(hud, 16, Vector2(24, 790), Vector2(1000, 100))
 	help.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	help.text = "WASD move   Shift sprint   Space jump   Right-drag look   Hold Tab sled view\n1-4 switch husky   B bot mode   R restart"
+	help.text = "WASD move   Shift sprint   Space jump   Right-drag look   Hold Tab sled view\n1-4 switch husky   B bot mode   R restart   L next map"
 
 
 func _label(parent: Node, size: int, pos: Vector2, box: Vector2) -> Label:

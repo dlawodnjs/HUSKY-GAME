@@ -52,7 +52,7 @@ func _init() -> void:
 	contact_monitor = true
 	max_contacts_reported = 8
 	collision_layer = 4
-	collision_mask = 1 | 2 | 4 | 8
+	collision_mask = 1 | 2 | 4 | 8 | 32   # 32 = 썰매 전용 막
 	var mat := PhysicsMaterial.new()
 	mat.friction = 0.0   # 접지력은 스크립트의 힘으로 처리
 	mat.bounce = 0.05

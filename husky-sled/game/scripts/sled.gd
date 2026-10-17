@@ -29,8 +29,8 @@ func _init() -> void:
 	physics_material_override = mat
 
 	# 날(러너) 2개, 바닥판, 낮은 난간
-	_add_box(Vector3(0.08, 0.2, 2.1), Vector3(-0.42, 0.1, 0))
-	_add_box(Vector3(0.08, 0.2, 2.1), Vector3(0.42, 0.1, 0))
+	_add_runner(-0.42)
+	_add_runner(0.42)
 	_add_box(Vector3(1.0, 0.18, 2.0), Vector3(0, 0.3, 0))
 	_add_box(Vector3(0.06, 0.12, 1.9), Vector3(-0.5, 0.45, 0))
 	_add_box(Vector3(0.06, 0.12, 1.9), Vector3(0.5, 0.45, 0))
@@ -66,7 +66,7 @@ func _physics_process(delta: float) -> void:
 
 func _probe_ground() -> void:
 	var from := global_position + global_basis.y * 0.3
-	var query := PhysicsRayQueryParameters3D.create(from, from - global_basis.y * 0.55, 1)
+	var query := PhysicsRayQueryParameters3D.create(from, from - global_basis.y * 0.55, 1 | 16)   # 16 = 빙판 표시
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	grounded = not hit.is_empty()
 	if grounded:
@@ -74,6 +74,18 @@ func _probe_ground() -> void:
 		on_ice = hit["collider"].has_meta("ice")
 	else:
 		on_ice = false
+
+
+## 날은 둥근 캡슐 모양으로 만든다. 각진 상자로 만들면 맵의 땅 이음매(상자와 상자가 맞닿은 곳)에 모서리가 걸려서 썰매가 멈춘다.
+func _add_runner(x: float) -> void:
+	var capsule := CapsuleShape3D.new()
+	capsule.radius = 0.09
+	capsule.height = 2.1
+	var shape := CollisionShape3D.new()
+	shape.shape = capsule
+	shape.position = Vector3(x, 0.09, 0)
+	shape.rotation_degrees.x = 90.0
+	add_child(shape)
 
 
 func _add_box(size: Vector3, pos: Vector3) -> void:
@@ -91,7 +103,7 @@ func _build_visual() -> void:
 	var dark := StandardMaterial3D.new()
 	dark.albedo_color = Color(0.3, 0.22, 0.16)
 	for child in get_children():
-		if child is CollisionShape3D:
+		if child is CollisionShape3D and child.shape is BoxShape3D:
 			var mi := MeshInstance3D.new()
 			var bm := BoxMesh.new()
 			bm.size = (child.shape as BoxShape3D).size
@@ -99,6 +111,15 @@ func _build_visual() -> void:
 			mi.position = child.position
 			mi.material_override = dark if child.position.y < 0.2 else wood
 			add_child(mi)
+	# 날 (모양은 상자로 그림)
+	for x in [-0.42, 0.42]:
+		var runner := MeshInstance3D.new()
+		var rm := BoxMesh.new()
+		rm.size = Vector3(0.08, 0.2, 2.1)
+		runner.mesh = rm
+		runner.position = Vector3(x, 0.1, 0)
+		runner.material_override = dark
+		add_child(runner)
 	# 앞쪽으로 말려 올라간 날
 	for x in [-0.42, 0.42]:
 		var curl := TorusMesh.new()
