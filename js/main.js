@@ -57,13 +57,7 @@ function startGame() {
 }
 
 function resetGame() {
-    state = {
-        gold: 300, stamina: 50, stress: 0, obedience: 10, wildness: 30, affection: 20,
-        strength: 10, gluttony: 20, charisma: 10, agility: 15, 
-        intelligence: 10, sociality: 10, courage: 10, scent: 10, hygiene: 50,
-        fatigue: 0, currentWeek: 1, currentDayIndex: 0, maxWeeks: 48, isAdult: false, 
-        tournamentWins: 0, gameOverReason: "", consecutiveHighStressWeeks: 0, furniture: []
-    };
+    state = createInitialState();
     huskyState.expression = 'neutral';
     screens.ending.classList.remove('active');
     setTimeout(() => {
@@ -128,8 +122,9 @@ async function executeWeek() {
             
             checkPubertyEvents();
             checkGrowthEvents();
-            
-            if(state.currentWeek > state.maxWeeks) {
+            checkStaminaEvents();
+
+            if(state.gameOverReason !== "" || state.currentWeek > state.maxWeeks) {
                 triggerEnding();
             } else if(state.currentWeek % 4 === 0) {
                 ui.minigameEntranceModal.classList.remove('hidden');
@@ -137,19 +132,13 @@ async function executeWeek() {
         } else {
             triggerEnding();
         }
-        
-        // Apply furniture passive buffs at the end of the week
-        if (state.furniture.includes('bed')) {
-            state.stamina = Math.min(state.stamina + 10, 100);
-            state.fatigue = Math.max(state.fatigue - 5, 0);
-        }
-        
+
         updateStatsUI();
         renderScheduleUI();
     } catch(e) {
         console.error("Error during executeWeek:", e);
     } finally {
-        ui.btnExecute.disabled = false;
+        ui.btnExecute.disabled = weeklySchedule.length < 7;
     }
 }
 
@@ -208,9 +197,10 @@ function processAction(action) {
             state.stress = Math.max(state.stress - Math.ceil(3 * playMult), 0);
             break;
         case ActionType.REST:
-            state.stamina = Math.min(state.stamina + 8, 100);
+            let hasBed = state.furniture.includes('bed');
+            state.stamina = Math.min(state.stamina + (hasBed ? 12 : 8), 100);
             state.stress = Math.max(state.stress - 3, 0);
-            state.fatigue = Math.max(state.fatigue - 4, 0);
+            state.fatigue = Math.max(state.fatigue - (hasBed ? 6 : 4), 0);
             updateGrowthStat('gluttony', 1);
             updateGrowthStat('agility', -1);
             break;

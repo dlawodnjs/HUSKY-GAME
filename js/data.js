@@ -31,34 +31,38 @@ const actionNamesKR = {
 
 const days = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"];
 
-// Initial global state
-let state = {
-    gold: 300, // Reduced initial gold for harder difficulty
-    hunger: 0,
-    stamina: 50,
-    stress: 0,
-    obedience: 10,
-    wildness: 30,
-    affection: 20,
-    strength: 10,
-    gluttony: 20,
-    charisma: 10,
-    agility: 15,
-    intelligence: 10,
-    sociality: 10,
-    courage: 10,
-    scent: 10,
-    hygiene: 50,
-    fatigue: 0,
-    currentWeek: 1,
-    currentDayIndex: 0,
-    maxWeeks: 48,
-    isAdult: false,
-    tournamentWins: 0,
-    gameOverReason: "",
-    consecutiveHighStressWeeks: 0,
-    furniture: []
-};
+// Initial global state (also used by resetGame)
+function createInitialState() {
+    return {
+        gold: 300, // Reduced initial gold for harder difficulty
+        hunger: 0,
+        stamina: 50,
+        stress: 0,
+        obedience: 10,
+        wildness: 30,
+        affection: 20,
+        strength: 10,
+        gluttony: 20,
+        charisma: 10,
+        agility: 15,
+        intelligence: 10,
+        sociality: 10,
+        courage: 10,
+        scent: 10,
+        hygiene: 50,
+        fatigue: 0,
+        currentWeek: 1,
+        currentDayIndex: 0,
+        maxWeeks: 48,
+        isAdult: false,
+        tournamentWins: 0,
+        gameOverReason: "",
+        consecutiveHighStressWeeks: 0,
+        furniture: []
+    };
+}
+
+let state = createInitialState();
 
 const statNamesKR = {
     obedience: "복종", wildness: "야성", affection: "친밀도", strength: "근력", gluttony: "식탐",

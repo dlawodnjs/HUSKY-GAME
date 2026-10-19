@@ -253,7 +253,7 @@ function updateHuskyExpressionFromStats() {
         huskyState.expression = 'tired';
     } else if (state.stress > 70) {
         huskyState.expression = 'stressed';
-    } else if (state.gluttony > 70) {
+    } else if (state.hunger > 70) {
         huskyState.expression = 'hungry';
     } else if (state.affection > 80 && Math.random() < 0.1) {
         huskyState.expression = 'happy';
