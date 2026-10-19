@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>허스키 픽셀 미리보기</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%233d4357%22/%3E%3Crect x=%224%22 y=%227%22 width=%228%22 height=%226%22 fill=%22%23f5f2eb%22/%3E%3Crect x=%225%22 y=%228%22 width=%222%22 height=%222%22 fill=%22%235fb6ff%22/%3E%3Crect x=%229%22 y=%228%22 width=%222%22 height=%222%22 fill=%22%235fb6ff%22/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #2b2430;
+      --panel: #3a3140;
+      --ink: #f3ebe1;
+      --muted: #bfb2a6;
+      --accent: #ffb86b;
+      --line: #574a5e;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    }
+    main {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding-block: 16px;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+    h1 { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+    .sub { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+    #stage-box { width: 100%; display: flex; justify-content: center; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; max-width: 100%; }
+    #stage { cursor: none; border-radius: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35); touch-action: none; }
+    .controls { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: flex-start; }
+    #clips { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+    .group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .label { color: var(--muted); font-size: 12px; margin-right: 2px; min-width: 28px; }
+    button {
+      font: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button.on { background: var(--accent); color: #2b2430; border-color: var(--accent); font-weight: 700; }
+    .settings { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+    .settings label { color: var(--muted); font-size: 12px; display: flex; gap: 6px; align-items: center; }
+    input[type=range] { accent-color: var(--accent); width: 120px; }
+    #gallery-box { position: relative; margin-top: 16px; }
+    #gallery-labels span {
+      position: absolute;
+      padding: 4px 6px;
+      font-size: 12px;
+      color: #4a3a2e;
+      pointer-events: none;
+    }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>허스키 메이커 — 애니메이션 미리보기</h1>
+    <p class="sub">2D 픽셀 · 480×270 · 아기 허스키. 손(커서)을 움직이면 고개가 따라오고, 강아지를 클릭하면 쓰다듬기에 반응해요. 같은 곳을 다시 클릭하면 긁어 주기, 꼬리를 누르면 움찔.</p>
+    <div id="stage-box"><canvas id="stage"></canvas></div>
+    <div class="controls">
+      <div id="clips"></div>
+      <div class="settings">
+        <label>기분(꼬리) <input id="mood" type="range" min="0" max="100" value="55"></label>
+        <label>속도
+          <button data-speed="1" class="on">1×</button>
+          <button data-speed="0.25">0.25×</button>
+        </label>
+        <label>카메라
+          <button data-zoom="1">전체</button>
+          <button data-zoom="1.5" class="on">1.5×</button>
+          <button data-zoom="2">2×</button>
+        </label>
+        <button id="toggle-gallery">모든 동작 한눈에</button>
+      </div>
+    </div>
+    <div id="gallery-box" hidden>
+      <canvas id="gallery"></canvas>
+      <div id="gallery-labels"></div>
+    </div>
+    <p class="hint">숨쉬기·눈 깜빡임·귀 쫑긋·꼬리 흔들기는 동작 위에 자동으로 겹쳐져서, 같은 동작도 매번 조금씩 다르게 보여요.</p>
+  </main>
+  <script type="module" src="src/preview.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "husky-maker-web",
+  "private": true,
+  "type": "module",
+  "description": "Husky Maker - 2D pixel web version",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "sheet": "node tools/sheet.mjs",
+    "serve": "npx --yes serve ."
+  }
+}
