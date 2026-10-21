@@ -1,202 +1,189 @@
-// Animation clips. A clip has a base state (pose + overrides) and frames that
-// add per-frame overrides for `dur` seconds. Optional per-clip flags:
+// Animation clips. Every frame names a hand-drawn husky frame (src/art/husky)
+// and how long it is held, so timing is part of the drawing like in classic
+// pixel animation: quick in-betweens are short, key poses are held.
+// Per-clip fields:
+//   pose      – the pose the clip is played in (stand, sit, lie, sleep, bow);
+//               changing pose inserts transition clips (TRANSITIONS)
 //   loop      – repeat frames forever
 //   next      – clip to play when a one-shot clip ends
 //   look      – head may follow the look target (cursor) during this clip
 //   wag       – tail wag strength multiplier on top of mood (0 = no wag)
-//   blink     – random blinking allowed
+//   blink     – random blinking and ear twitches allowed
 //   breathe   – breathing rate in breaths per second (0 = none)
-// Frame keys: dur, plus any state key (legs, head, eyes, mouth, ears, tail,
-// dy, bodyDy, bodyDx, headDx, headDy) and `fx` (effect names to spawn).
+//   speed     – px/s the dog travels while playing
+// Frame fields: f (frame name), dur (seconds), fx (effect names to spawn).
 
-const WALK_A = { f1: 'leg_fwd', f2: 'leg_back', b1: 'leg_back', b2: 'leg_fwd' };
-const WALK_B = { f1: 'leg_straight', f2: 'leg_lift', b1: 'leg_lift', b2: 'leg_straight' };
-const WALK_C = { f1: 'leg_back', f2: 'leg_fwd', b1: 'leg_fwd', b2: 'leg_back' };
-const WALK_D = { f1: 'leg_lift', f2: 'leg_straight', b1: 'leg_straight', b2: 'leg_lift' };
-const RUN_REACH = { f1: 'leg_fwd', f2: 'leg_fwd', b1: 'leg_back', b2: 'leg_back' };
-const RUN_GATHER = { f1: 'leg_lift', f2: 'leg_back', b1: 'leg_fwd', b2: 'leg_lift' };
-const RUN_PUSH = { f1: 'leg_back', f2: 'leg_back', b1: 'leg_fwd', b2: 'leg_fwd' };
+const T = 1 / 12; // one tick at 12 fps, the base timing unit
 
 export const CLIPS = {
   idle: {
-    base: { pose: 'stand' },
-    loop: true, look: true, wag: 1, blink: true, breathe: 0.8,
-    frames: [{ dur: 1 }],
+    pose: 'stand', loop: true, look: true, wag: 1, blink: true, breathe: 0.8,
+    frames: [{ f: 'stand', dur: 1 }],
   },
   walk: {
-    base: { pose: 'stand' },
-    loop: true, look: true, wag: 1, blink: true, breathe: 0, speed: 26,
-    frames: [
-      { dur: 0.11, legs: WALK_A },
-      { dur: 0.11, legs: WALK_B, dy: -1, headDy: 1 },
-      { dur: 0.11, legs: WALK_C },
-      { dur: 0.11, legs: WALK_D, dy: -1, headDy: 1 },
-    ],
+    pose: 'stand', loop: true, look: true, wag: 1, blink: true, speed: 26,
+    frames: ['walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6'].map((f) => ({ f, dur: 0.9 * T })),
   },
   run: {
-    base: { pose: 'stand', mouth: 'mouth_open', ears: 'ear_back' },
-    loop: true, wag: 0, blink: false, breathe: 0, speed: 70,
+    pose: 'stand', loop: true, speed: 70,
     frames: [
-      { dur: 0.07, legs: RUN_REACH, dy: -2, headDy: 1, tail: 'tail_mid' },
-      { dur: 0.07, legs: RUN_PUSH, dy: -1, tail: 'tail_mid' },
-      { dur: 0.07, legs: RUN_GATHER, dy: 0, headDy: -1, tail: 'tail_mid' },
-      { dur: 0.07, legs: RUN_PUSH, dy: -1, tail: 'tail_mid' },
+      { f: 'run1', dur: 0.6 * T },
+      { f: 'run2', dur: 0.6 * T },
+      { f: 'run3', dur: 0.5 * T },
+      { f: 'run4', dur: 0.6 * T },
+      { f: 'run5', dur: 0.6 * T },
+      { f: 'run6', dur: 0.5 * T },
     ],
   },
   sit_down: {
-    base: { pose: 'stand' },
-    next: 'sit', wag: 0.5,
-    frames: [
-      { dur: 0.08, legs: { b1: 'leg_short', b2: 'leg_short' }, dy: 0, bodyDy: 1 },
-      { dur: 0.08, pose: 'crouch', ears: 'ear_up', tail: 'tail_mid', headDy: -2 },
-    ],
+    pose: 'stand', next: 'sit', wag: 0.5,
+    frames: [{ f: 'crouch', dur: T }, { f: 'sit_down1', dur: T }],
   },
   sit: {
-    base: { pose: 'sit' },
-    loop: true, look: true, wag: 0.6, blink: true, breathe: 0.7,
-    frames: [{ dur: 1 }],
+    pose: 'sit', loop: true, look: true, wag: 0.6, blink: true, breathe: 0.7,
+    frames: [{ f: 'sit', dur: 1 }],
   },
   stand_up: {
-    base: { pose: 'crouch', tail: 'tail_mid', ears: 'ear_up' },
-    next: 'idle', wag: 0,
-    frames: [{ dur: 0.08, headDy: -2 }, { dur: 0.08, pose: 'stand', bodyDy: 1 }],
+    pose: 'sit', next: 'idle',
+    frames: [{ f: 'sit_down1', dur: T }, { f: 'crouch', dur: T }],
   },
   lie_down: {
-    base: { pose: 'crouch', ears: 'ear_up', tail: 'tail_mid' },
-    next: 'lie',
-    frames: [{ dur: 0.1 }, { dur: 0.1, pose: 'lie', bodyDy: -1 }],
+    pose: 'stand', next: 'lie',
+    frames: [{ f: 'crouch', dur: 1.2 * T }, { f: 'lie_down1', dur: 1.2 * T }],
   },
   lie: {
-    base: { pose: 'lie' },
-    loop: true, look: true, wag: 0.4, blink: true, breathe: 0.6,
-    frames: [{ dur: 1 }],
+    pose: 'lie', loop: true, look: true, wag: 0.4, blink: true, breathe: 0.6,
+    frames: [{ f: 'lie', dur: 1 }],
   },
   get_up: {
-    base: { pose: 'lie' },
-    next: 'idle',
-    frames: [{ dur: 0.1, pose: 'crouch', tail: 'tail_mid' }, { dur: 0.08, pose: 'stand', bodyDy: 1 }],
+    pose: 'lie', next: 'idle',
+    frames: [{ f: 'lie_down1', dur: 1.2 * T }, { f: 'crouch', dur: T }],
+  },
+  curl_up: {
+    pose: 'lie', next: 'sleep',
+    frames: [{ f: 'curl1', dur: 2 * T }, { f: 'curl2', dur: 2 * T }],
+  },
+  wake: {
+    pose: 'sleep', next: 'lie',
+    frames: [{ f: 'curl2', dur: 1.5 * T }, { f: 'curl1', dur: 1.5 * T }],
   },
   sleep: {
-    base: { pose: 'sleep', eyes: 'eye_closed', ears: 'ear_back' },
-    loop: true, wag: 0, blink: false, breathe: 0.35,
+    pose: 'sleep', loop: true, breathe: 0.35,
     frames: [
-      { dur: 1.6, fx: ['zzz_small'] },
-      { dur: 1.6, fx: ['zzz_big'] },
-      { dur: 0.12, headDy: 1 },
-      { dur: 0.12 },
-      { dur: 1.2 },
+      { f: 'sleep', dur: 1.6, fx: ['zzz_small'] },
+      { f: 'sleep', dur: 1.6, fx: ['zzz_big'] },
+      { f: 'sleep_flick', dur: 1.5 * T },
+      { f: 'sleep', dur: 1.5 * T },
+      { f: 'sleep_flick', dur: T },
+      { f: 'sleep', dur: 1.2 },
     ],
   },
   happy: {
-    base: { pose: 'stand', mouth: 'mouth_open', eyes: 'eye_happy' },
-    loop: true, wag: 3, blink: false, breathe: 0,
+    pose: 'stand', loop: true, wag: 3,
     frames: [
-      { dur: 0.09, bodyDx: -1, fx: ['heart'] },
-      { dur: 0.09, bodyDx: 0, dy: -1 },
-      { dur: 0.09, bodyDx: 1 },
-      { dur: 0.09, bodyDx: 0, dy: -1 },
-      { dur: 0.09, bodyDx: -1 },
-      { dur: 0.09, bodyDx: 0, dy: -1 },
-      { dur: 0.09, bodyDx: 1 },
-      { dur: 0.09, bodyDx: 0, dy: -1 },
+      { f: 'happy1', dur: 1.2 * T, fx: ['heart'] },
+      { f: 'happy2', dur: 0.8 * T },
+      { f: 'happy3', dur: 1.2 * T },
+      { f: 'happy4', dur: T },
     ],
   },
   pet_lean: {
-    base: { pose: 'stand', eyes: 'eye_happy', ears: 'ear_back', mouth: 'mouth_open' },
-    loop: true, wag: 2.5, blink: false, breathe: 0.6,
+    pose: 'stand', loop: true, wag: 2.5,
     frames: [
-      { dur: 0.5, headDx: -1, headDy: 1, fx: ['heart'] },
-      { dur: 0.5, headDx: -1, headDy: 1, bodyDy: 1 },
+      { f: 'pet1', dur: 6 * T, fx: ['heart'] },
+      { f: 'pet2', dur: 6 * T },
     ],
   },
   scratch_kick: {
-    base: { pose: 'stand', eyes: 'eye_closed', mouth: 'mouth_open', head: 'head_up' },
-    loop: true, wag: 2, blink: false, breathe: 0,
+    pose: 'stand', loop: true, wag: 2,
     frames: [
-      { dur: 0.06, legs: { b1: 'leg_lift' } },
-      { dur: 0.06, legs: { b1: 'leg_fwd' }, dy: -1 },
+      { f: 'scratch1', dur: 0.7 * T },
+      { f: 'scratch2', dur: 0.7 * T },
+      { f: 'scratch3', dur: 0.7 * T },
+      { f: 'scratch2', dur: 0.7 * T },
     ],
   },
   shake: {
-    base: { pose: 'stand', eyes: 'eye_closed' },
-    next: 'idle', wag: 0, blink: false,
+    pose: 'stand', next: 'idle',
     frames: [
-      { dur: 0.05, bodyDx: -1, headDx: 1, ears: 'ear_back', fx: ['drop'] },
-      { dur: 0.05, bodyDx: 1, headDx: -1 },
-      { dur: 0.05, bodyDx: -1, headDx: 1, ears: 'ear_back', fx: ['drop'] },
-      { dur: 0.05, bodyDx: 1, headDx: -1 },
-      { dur: 0.05, bodyDx: -1, headDx: 1, ears: 'ear_back', fx: ['drop'] },
-      { dur: 0.05, bodyDx: 1, headDx: -1 },
-      { dur: 0.05, bodyDx: -1, headDx: 1, ears: 'ear_back' },
-      { dur: 0.05, bodyDx: 1, headDx: -1 },
-      { dur: 0.15, eyes: 'eye_open' },
+      { f: 'shake1', dur: 0.7 * T, fx: ['drop'] },
+      { f: 'shake2', dur: 0.6 * T },
+      { f: 'shake3', dur: 0.7 * T, fx: ['drop'] },
+      { f: 'shake4', dur: 0.6 * T },
+      { f: 'shake1', dur: 0.7 * T, fx: ['drop'] },
+      { f: 'shake2', dur: 0.6 * T },
+      { f: 'shake3', dur: 0.7 * T },
+      { f: 'shake4', dur: 0.6 * T },
+      { f: 'shake_end', dur: 2 * T },
     ],
   },
   flinch: {
-    base: { pose: 'crouch', ears: 'ear_back', eyes: 'eye_half' },
-    next: 'idle', wag: 0, blink: false,
-    frames: [{ dur: 0.08, bodyDx: -1, fx: ['sweat'] }, { dur: 0.6 }, { dur: 0.1, pose: 'stand', tail: 'tail_mid' }],
+    pose: 'stand', next: 'idle',
+    frames: [
+      { f: 'flinch1', dur: T, fx: ['sweat'] },
+      { f: 'flinch2', dur: 7 * T },
+      { f: 'crouch', dur: 1.2 * T },
+    ],
   },
   play_bow: {
-    base: { pose: 'bow', mouth: 'mouth_open', eyes: 'eye_happy' },
-    loop: true, wag: 3, blink: false,
+    pose: 'bow', loop: true, wag: 3,
     frames: [
-      { dur: 0.25 },
-      { dur: 0.12, dy: -1 },
-      { dur: 0.25 },
-      { dur: 0.12, dy: -1, fx: ['note'] },
+      { f: 'bow', dur: 3 * T },
+      { f: 'bow2', dur: 1.5 * T },
+      { f: 'bow', dur: 3 * T },
+      { f: 'bow2', dur: 1.5 * T, fx: ['note'] },
     ],
   },
   yawn: {
-    base: { pose: 'sit' },
-    next: 'sit', wag: 0,
+    pose: 'sit', next: 'sit',
     frames: [
-      { dur: 0.15, head: 'head_up' },
-      { dur: 0.9, head: 'head_up', mouth: 'mouth_yawn', eyes: 'eye_closed', ears: 'ear_back' },
-      { dur: 0.15, head: 'head_up', eyes: 'eye_half' },
-      { dur: 0.3, eyes: 'eye_half' },
+      { f: 'yawn1', dur: 2 * T },
+      { f: 'yawn2', dur: 11 * T },
+      { f: 'yawn3', dur: 2 * T },
+      { f: 'sit_half', dur: 4 * T },
     ],
   },
   head_tilt: {
-    base: { pose: 'sit', head: 'head_front' },
-    next: 'sit', wag: 0.8, blink: true,
-    frames: [{ dur: 0.2 }, { dur: 1.2, head: 'head_tilt', fx: ['question'] }, { dur: 0.2 }],
+    pose: 'sit', next: 'sit', wag: 0.8,
+    frames: [
+      { f: 'tilt0', dur: 2.5 * T },
+      { f: 'tilt1', dur: 14 * T, fx: ['question'] },
+      { f: 'tilt0', dur: 2.5 * T },
+    ],
   },
   eat: {
-    base: { pose: 'stand', head: 'head_down', eyes: 'eye_happy', headDy: 3, headDx: 1 },
-    loop: true, wag: 2.5, blink: false,
+    pose: 'stand', loop: true, wag: 2.5,
     frames: [
-      { dur: 0.14, mouth: 'mouth_chomp', headDy: 4 },
-      { dur: 0.14 },
-      { dur: 0.14, mouth: 'mouth_chomp', headDy: 4 },
-      { dur: 0.3 },
+      { f: 'eat1', dur: 1.7 * T },
+      { f: 'eat2', dur: 1.7 * T },
+      { f: 'eat1', dur: 1.7 * T },
+      { f: 'eat3', dur: 3.6 * T },
     ],
   },
 };
 
-// Clips that must be passed through when changing base pose.
+// Clips (one or a chain) that must be passed through when changing pose.
 export const TRANSITIONS = {
-  'stand>sit': 'sit_down',
-  'sit>stand': 'stand_up',
-  'stand>lie': 'lie_down',
-  'lie>stand': 'get_up',
-  'sit>lie': 'lie_down',
-  'lie>sit': 'get_up',
-  'stand>sleep': 'lie_down',
-  'lie>sleep': null,
-  'sleep>stand': 'get_up',
-  'sleep>lie': null,
+  'stand>sit': ['sit_down'],
+  'sit>stand': ['stand_up'],
+  'stand>lie': ['lie_down'],
+  'lie>stand': ['get_up'],
+  'sit>lie': ['lie_down'],
+  'lie>sit': ['get_up'],
+  'stand>sleep': ['lie_down', 'curl_up'],
+  'lie>sleep': ['curl_up'],
+  'sleep>stand': ['wake', 'get_up'],
+  'sleep>lie': ['wake'],
 };
 
 export function basePose(clipName) {
-  const c = CLIPS[clipName];
-  return c ? c.base.pose : 'stand';
+  return CLIPS[clipName]?.pose ?? 'stand';
 }
 
 // The pose a clip leaves the dog in (its own pose if it loops, else its `next`).
 export function restingPose(clipName, depth = 0) {
   const c = CLIPS[clipName];
   if (!c) return 'stand';
-  if (c.loop || !c.next || depth > 4) return c.base.pose;
+  if (c.loop || !c.next || depth > 4) return c.pose;
   return restingPose(c.next, depth + 1);
 }

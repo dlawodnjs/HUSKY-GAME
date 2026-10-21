@@ -6,11 +6,10 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { Surface, compileAll, hex } from '../src/engine/raster.js';
 import { PALETTE } from '../src/art/palette.js';
-import { PUPPY } from '../src/art/puppy.js';
 import { FX } from '../src/art/fx.js';
 import { CLIPS } from '../src/anim/clips.js';
 import { Animator } from '../src/anim/animator.js';
-import { drawDog, anchors } from '../src/anim/rig.js';
+import { drawDog, anchors } from '../src/anim/sprite_dog.js';
 import { Effects } from '../src/engine/fx.js';
 import { writePNG } from './png.mjs';
 
@@ -21,10 +20,10 @@ const only = args.find((a) => a.startsWith('--only='))?.slice(7).split(',');
 const scale = Number(args.find((a) => a.startsWith('--scale='))?.slice(8) ?? 4);
 mkdirSync(outDir, { recursive: true });
 
-const sprites = compileAll({ ...PUPPY, ...FX }, PALETTE);
-const W = 72;
-const H = 54;
-const GROUND = 46;
+const sprites = compileAll(FX, PALETTE);
+const W = 84;
+const H = 68;
+const GROUND = 62;
 const BG = hex('#efe6d8');
 const FLOOR = hex('#c49a74');
 const FLOOR_LINE = hex('#a77f5d');
@@ -46,7 +45,7 @@ function renderClip(name, seconds, fps = 30) {
   for (let i = 0; i < seconds * fps; i++) {
     const spawned = anim.update(dt);
     const st = anim.state();
-    const ax = anchors(sprites, W / 2, GROUND, 1, st);
+    const ax = anchors(W / 2, GROUND, 1, st);
     for (const k of spawned) {
       const [x, y] = ax[Effects.origin(k)];
       fx.spawn(k, x, y, 1);
@@ -56,7 +55,7 @@ function renderClip(name, seconds, fps = 30) {
     s.clear(BG);
     s.fillRect(0, GROUND, W, H - GROUND, FLOOR);
     s.fillRect(0, GROUND, W, 1, FLOOR_LINE);
-    drawDog(s, sprites, W / 2, GROUND, 1, st);
+    drawDog(s, W / 2, GROUND, 1, st);
     fx.draw(s, sprites);
     frames.push(s);
   }

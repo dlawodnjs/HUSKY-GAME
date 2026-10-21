@@ -6,12 +6,11 @@ import { Screen } from './engine/screen.js';
 import { startLoop } from './engine/loop.js';
 import { Effects } from './engine/fx.js';
 import { PALETTE } from './art/palette.js';
-import { PUPPY } from './art/puppy.js';
 import { FX } from './art/fx.js';
 import { drawRoom, ROOM_W, ROOM_H, GROUND_Y } from './art/room.js';
 import { CLIPS } from './anim/clips.js';
 import { Animator } from './anim/animator.js';
-import { drawDog, anchors, partAt } from './anim/rig.js';
+import { drawDog, anchors, partAt } from './anim/sprite_dog.js';
 
 export const CLIP_NAMES = {
   idle: '대기',
@@ -37,7 +36,7 @@ const GROUPS = [
   ['행동', ['yawn', 'head_tilt', 'shake', 'flinch', 'eat']],
 ];
 
-const sprites = compileAll({ ...PUPPY, ...FX }, PALETTE);
+const sprites = compileAll(FX, PALETTE);
 const room = new Surface(ROOM_W, ROOM_H);
 drawRoom(room);
 const frame = new Surface(ROOM_W, ROOM_H);
@@ -123,7 +122,7 @@ canvas.addEventListener('pointerleave', () => {
 canvas.addEventListener('pointerdown', (e) => {
   ui.mouse = screen.toWorld(e.clientX, e.clientY);
   ui.pressing = true;
-  const part = partAt(sprites, dog.x, GROUND_Y, dog.facing, dog.anim.state(), ui.mouse[0], ui.mouse[1]);
+  const part = partAt(dog.x, GROUND_Y, dog.facing, dog.anim.state(), ui.mouse[0], ui.mouse[1]);
   if (!part) return;
   const resting = dog.anim.pose === 'sit' ? 'sit' : dog.anim.pose === 'lie' ? 'lie' : 'idle';
   const reaction = part === 'tail' ? 'flinch' : part === 'head' && dog.anim.clip === 'pet_lean' ? 'scratch_kick' : 'pet_lean';
@@ -136,16 +135,15 @@ window.addEventListener('pointerup', () => (ui.pressing = false));
 
 // ---------------------------------------------------------------- simulation
 function headPoint(st) {
-  const a = anchors(sprites, dog.x, GROUND_Y, dog.facing, st);
-  return [a.head[0], a.head[1] + 8];
+  return anchors(dog.x, GROUND_Y, dog.facing, st).eye;
 }
 
 function update(dt) {
   const clip = CLIPS[dog.anim.clip];
   if (clip.speed) {
     dog.x += clip.speed * dog.facing * dt;
-    if (dog.x > ROOM_W - 40) dog.facing = -1;
-    if (dog.x < 40) dog.facing = 1;
+    if (dog.x > ROOM_W - 50) dog.facing = -1;
+    if (dog.x < 50) dog.facing = 1;
   }
   if (dog.returnTo) {
     dog.returnIn -= dt;
@@ -172,7 +170,7 @@ function update(dt) {
   }
   const spawned = dog.anim.update(dt);
   if (spawned.length) {
-    const a = anchors(sprites, dog.x, GROUND_Y, dog.facing, dog.anim.state());
+    const a = anchors(dog.x, GROUND_Y, dog.facing, dog.anim.state());
     for (const k of spawned) dog.fx.spawn(k, ...a[Effects.origin(k)], dog.facing);
   }
   dog.fx.update(dt);
@@ -182,8 +180,9 @@ function update(dt) {
 function render() {
   frame.copyFrom(room);
   // Soft contact shadow under the dog.
-  frame.shadeRect(Math.round(dog.x) - 12, GROUND_Y, 25, 1, hex('#5a3b26'), 0.35);
-  drawDog(frame, sprites, Math.round(dog.x), GROUND_Y, dog.facing, dog.anim.state());
+  frame.shadeRect(Math.round(dog.x) - 20, GROUND_Y, 41, 1, hex('#5a3b26'), 0.35);
+  frame.shadeRect(Math.round(dog.x) - 14, GROUND_Y + 1, 29, 1, hex('#5a3b26'), 0.2);
+  drawDog(frame, Math.round(dog.x), GROUND_Y, dog.facing, dog.anim.state());
   dog.fx.draw(frame, sprites);
   if (ui.over && ui.mouse) blit(frame, sprites[ui.pressing ? 'hand_press' : 'hand_open'], ui.mouse[0], ui.mouse[1]);
   screen.present(frame, [dog.x, GROUND_Y]);
@@ -192,8 +191,8 @@ function render() {
 
 // ---------------------------------------------------------------- gallery
 const gallery = (() => {
-  const cellW = 72;
-  const cellH = 56;
+  const cellW = 80;
+  const cellH = 66;
   const names = Object.keys(CLIP_NAMES);
   const cols = 5;
   const rows = Math.ceil(names.length / cols);
@@ -230,9 +229,9 @@ const gallery = (() => {
         const spawned = c.anim.update(dt);
         const i = cells.indexOf(c);
         const ox = (i % cols) * cellW + cellW / 2;
-        const oy = Math.floor(i / cols) * cellH + cellH - 8;
+        const oy = Math.floor(i / cols) * cellH + cellH - 4;
         if (spawned.length) {
-          const a = anchors(sprites, ox, oy, 1, c.anim.state());
+          const a = anchors(ox, oy, 1, c.anim.state());
           for (const k of spawned) c.fx.spawn(k, ...a[Effects.origin(k)], 1);
         }
         c.fx.update(dt);
@@ -244,14 +243,14 @@ const gallery = (() => {
       cells.forEach((c, i) => {
         const x0 = (i % cols) * cellW;
         const y0 = Math.floor(i / cols) * cellH;
-        surf.fillRect(x0, y0 + cellH - 8, cellW, 8, floor);
+        surf.fillRect(x0, y0 + cellH - 4, cellW, 4, floor);
         surf.fillRect(x0, y0, 1, cellH, ink);
         surf.fillRect(x0, y0, cellW, 1, ink);
       });
       cells.forEach((c, i) => {
         const ox = (i % cols) * cellW + cellW / 2;
-        const oy = Math.floor(i / cols) * cellH + cellH - 8;
-        drawDog(surf, sprites, ox, oy, 1, c.anim.state());
+        const oy = Math.floor(i / cols) * cellH + cellH - 4;
+        drawDog(surf, ox, oy, 1, c.anim.state());
         c.fx.draw(surf, sprites);
       });
       gScreen.present(surf);

@@ -1,15 +1,17 @@
-// Plays clips and layers secondary motion on top: breathing, blinking, ear
-// twitches, mood-driven tail wag and head-follows-cursor. Pure logic: it
-// outputs a rig state and the names of effects to spawn, nothing else.
+// Plays clips and layers small hand-drawn overlays on top: breathing, blinking,
+// ear twitches, mood-driven tail wag and head-follows-cursor. Pure logic: it
+// outputs which frame to show, which overlay stamps to paste on it, and the
+// names of effects to spawn.
 
 import { CLIPS, TRANSITIONS, basePose, restingPose } from './clips.js';
+import { HUSKY } from '../art/husky/frames.js';
 
-const STATE_SKIP = new Set(['dur', 'fx']);
 const LOOK_HOLD = 0.12; // seconds a new look direction must persist before the head turns
 
 export class Animator {
-  constructor({ random = Math.random } = {}) {
+  constructor({ random = Math.random, lib = HUSKY } = {}) {
     this.random = random;
+    this.lib = lib;
     this.mood = 0.5; // 0 calm .. 1 excited; scales tail wag
     this.look = null; // {dx, dy} from the head to the look target, in dog-local px (+dx = in front)
     this.clip = 'idle';
@@ -22,8 +24,8 @@ export class Animator {
     this._earIn = 4 + random() * 5;
     this._earLeft = 0;
     this._wagPhase = 0;
-    this._lookHead = 'head_side';
-    this._lookCandidate = 'head_side';
+    this._lookHead = 'side';
+    this._lookCandidate = 'side';
     this._lookHeld = 0;
   }
 
@@ -39,14 +41,11 @@ export class Animator {
     const to = basePose(name);
     const chain = [];
     if (from !== to) {
-      const key = `${from}>${to}`;
-      const direct = TRANSITIONS[key];
-      if (direct) chain.push(direct);
-      else if (direct === null) {
-        // Allowed without an in-between clip (e.g. lying -> sleeping).
-      } else {
-        if (from !== 'stand' && TRANSITIONS[`${from}>stand`]) chain.push(TRANSITIONS[`${from}>stand`]);
-        if (to !== 'stand' && TRANSITIONS[`stand>${to}`]) chain.push(TRANSITIONS[`stand>${to}`]);
+      const direct = TRANSITIONS[`${from}>${to}`];
+      if (direct) chain.push(...direct);
+      else {
+        if (from !== 'stand') chain.push(...(TRANSITIONS[`${from}>stand`] ?? []));
+        if (to !== 'stand') chain.push(...(TRANSITIONS[`stand>${to}`] ?? []));
       }
     }
     chain.push(name);
@@ -128,43 +127,46 @@ export class Animator {
   }
 
   _lookTarget() {
-    if (!this.look) return 'head_side';
+    if (!this.look) return 'side';
     const { dx, dy } = this.look;
     const dist = Math.hypot(dx, dy);
-    if (dist < 24 && Math.abs(dy) < 16) return 'head_front';
-    if (dy < -16 && dy < -Math.abs(dx) * 0.5) return 'head_up';
-    if (dy > 12 && dx > 0) return 'head_down';
-    return 'head_side';
+    if (dist < 24 && Math.abs(dy) < 16) return 'front';
+    if (dy < -16 && dy < -Math.abs(dx) * 0.5) return 'up';
+    if (dy > 12 && dx > 0) return 'down';
+    return 'side';
   }
 
-  // The full rig state for this instant.
+  // What to draw this instant: a frame name plus overlay stamps, in paint order.
   state() {
     const clip = CLIPS[this.clip];
-    const s = { ...clip.base };
-    for (const [k, v] of Object.entries(this._frame())) if (!STATE_SKIP.has(k)) s[k] = v;
-    if (clip.base.legs || this._frame().legs) s.legs = { ...(clip.base.legs ?? {}), ...(this._frame().legs ?? {}) };
+    const frame = this._frame().f;
+    const sets = this.lib.frames[frame]?.sets ?? {};
+    const has = (name) => Boolean(this.lib.stamps[name]);
+    const overlays = [];
 
-    if (clip.blink && this._blinkLeft > 0 && (s.eyes ?? 'eye_open') === 'eye_open') s.eyes = 'eye_closed';
-    if (this._earLeft > 0 && (s.ears ?? 'ear_up') === 'ear_up') s.ears = 'ear_back';
-
-    if (clip.breathe) {
-      const phase = (this.time * clip.breathe) % 1;
-      if (phase < 0.4) s.bodyDy = (s.bodyDy ?? 0) - 1;
-    }
-
-    const tailFamily = !s.tail || s.tail === 'tail_up';
+    // Tail wag: rest, swing one way, rest, swing the other way.
     const wag = (clip.wag ?? 0) * (0.25 + this.mood);
-    if (tailFamily && wag > 0.05 && s.pose !== 'sit' && s.pose !== 'lie' && s.pose !== 'sleep') {
-      s.tail = this._wagPhase < 0.5 ? 'tail_up' : 'tail_up_b';
-    } else if (wag > 0.05 && (s.pose === 'sit' || s.pose === 'lie')) {
-      // Tail lying on the floor sweeps by a pixel.
-      s.tailDx = this._wagPhase < 0.5 ? 0 : -1;
+    if (sets.tail && wag > 0.05) {
+      const step = Math.floor(this._wagPhase * 4);
+      const name = step === 1 ? `wag_${sets.tail}_1` : step === 3 ? `wag_${sets.tail}_2` : null;
+      if (name && has(name)) overlays.push(name);
     }
-
-    if (clip.look && !s.head && this.look) {
-      s.head = this._lookHead;
-      if (s.head === 'head_side' && Math.abs(this.look.dy) > 6) s.headDy = (s.headDy ?? 0) + Math.sign(this.look.dy);
+    // Breathing in for 40% of each breath.
+    if (clip.breathe && sets.breathe && (this.time * clip.breathe) % 1 < 0.4 && has(`breathe_${sets.breathe}`)) {
+      overlays.push(`breathe_${sets.breathe}`);
     }
-    return s;
+    let look = 'side';
+    if (clip.look && this.look && sets.look && this._lookHead !== 'side' && has(`look_${this._lookHead}_${sets.look}`)) {
+      look = this._lookHead;
+      overlays.push(`look_${look}_${sets.look}`);
+    }
+    if (clip.blink && this._blinkLeft > 0) {
+      const name = look === 'side' ? sets.eyes && `blink_${sets.eyes}` : `blink_${look}`;
+      if (name && has(name)) overlays.push(name);
+    }
+    if (clip.blink && this._earLeft > 0 && look === 'side' && sets.ears && has(`twitch_${sets.ears}`)) {
+      overlays.push(`twitch_${sets.ears}`);
+    }
+    return { frame, overlays };
   }
 }
