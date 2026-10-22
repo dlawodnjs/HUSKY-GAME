@@ -1,0 +1,14 @@
+#!/bin/sh
+# HUSKY_DISCORD_DEFER가 있으면 쉰다(게시를 미루거나 이번 커밋을 올리지 않을 때).
+[ -n "$HUSKY_DISCORD_DEFER" ] && exit 0
+# Git has no post-push hook. Announce development commits, never deployment success.
+repo=$(git rev-parse --show-toplevel) || exit 0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$local_sha" in
+    0000000000000000000000000000000000000000|'') continue ;;
+  esac
+  python3 "$repo/tools/discord_updates.py" sync --event push --ref "$local_sha" || {
+    echo 'Discord 업데이트가 남아 있습니다. 다음 커밋·푸시에서 다시 시도합니다.' >&2
+  }
+done
+exit 0

@@ -18,6 +18,11 @@
 
 ---
 
+## 2026-10-23 · Claude Code(맥) · 디스코드 게시 도구를 이 저장소에 (커밋: 이 기록이 든 커밋)
+- 한 일: husky-puzzle의 게시 도구를 옮겨 `tools/discord_updates.py`(`status` · `sync` · `play`) · `tools/tests/` · `.githooks/` · `docs/discord-play.md`(플레이 고정 글 원고) · `docs/discord-updates.md`(쓰는 법)를 넣었다. 퍼즐 전용인 다운로드 안내는 뺐다. 중복 방지 기록을 이 저장소의 `.local/discord-updates/`로 옮겼다(`.gitignore`). 검사 15개 통과.
+- 남은 일: 훅은 **걸지 않았다**(`python3 tools/discord_updates.py install`을 돌리면 커밋 · 푸시 때 저절로 올라간다 — 사용자가 정한다). 그 전까지는 사용자에게 보일 커밋 뒤에 `sync`를 직접.
+- 주의: 공개 저장소다. 도구에 토큰 · 서버 주소가 없다(키체인 이름만). 이 커밋은 문서 · 도구뿐이라 게시됨으로 넣어 두었다.
+
 ## 2026-10-23 · Claude Code(맥) · 디스코드 허스키 메이커 구역 열기 (커밋: e8fc9d1 · 이 기록이 든 커밋)
 - 한 일: HUCODi Studio에 🐕 허스키 메이커 구역(`📜・메이커-업데이트` 봇만 · `🎮・메이커-플레이` · `🛷・썰매-끌기` · `💬・메이커-피드백`)을 만들고 ID를 `tools/discord-updates.json`에 적었다. 첫 개발 업데이트(2026-10-23, 그때까지 커밋 12개)를 올리고, 플레이 방법 글을 고정했다(플레이 주소는 "준비 중"). 서버 안내 글에 메이커 한 줄을 더했다. 계획에 있던 `📣・공지`는 기존 `📢・공지사항`이 있어 만들지 않았다.
 - 남은 일: 플레이 주소가 정해지면 고정 글을 고친다(`play_message_id`). **이 저장소에는 게시 훅이 없다** — 사용자에게 보일 커밋을 한 뒤 맥의 husky-puzzle에서 `python3 tools/discord_updates.py --repo ../HUSKY-GAME sync`를 돌린다(`--dry-run`으로 먼저 보기).

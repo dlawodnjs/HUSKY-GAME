@@ -1,0 +1,9 @@
+#!/bin/sh
+# HUSKY_DISCORD_DEFER가 있으면 쉰다(게시를 미루거나 이번 커밋을 올리지 않을 때).
+[ -n "$HUSKY_DISCORD_DEFER" ] && exit 0
+# A failed Discord request must never fail the commit.
+repo=$(git rev-parse --show-toplevel) || exit 0
+python3 "$repo/tools/discord_updates.py" sync --event commit || {
+  echo 'Discord 업데이트가 남아 있습니다. 다음 커밋·푸시에서 다시 시도합니다.' >&2
+}
+exit 0

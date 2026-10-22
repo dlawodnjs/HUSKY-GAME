@@ -15,7 +15,8 @@
 - 디스코드 서버(HUCODi Studio)는 허스키 구출 퍼즐과 함께 쓴다. 이 게임의 업데이트 내역은 🐕 허스키 메이커 구역의 `📜・메이커-업데이트` 채널에 올라간다. 서버 구성 · 맥에서 하는 절차는 husky-puzzle의 `docs/discord-community.md`.
 - 커밋 메시지에 한 줄에 한 문장씩 적는다: `Discord-Note: [추가|개선|수정|안내] 한 문장`. 유저가 알아들을 말로(파일 이름 · 함수 이름 없이). 유저가 느낄 변화가 없는 커밋(문서 · 정리)은 적지 않거나 `[안내]`만.
 - 게시 형식(퍼즐의 "게시 형식 v1"과 같고 제목만 다르다): 제목 `허스키 메이커 · 개발 업데이트 · YYYY-MM-DD`, 본문은 `추가 → 개선 → 수정 → 안내` 순서의 구역 제목과 `- 문장` 목록. 빈 구역 · 중복 문장은 뺀다.
-- 채널 ID 등 설정은 [`tools/discord-updates.json`](tools/discord-updates.json). **봇 토큰은 이 저장소에 절대 넣지 않는다**(맥 키체인에만). 실제 게시는 맥의 게시 도구로 한다.
+- 채널 ID 등 설정은 [`tools/discord-updates.json`](tools/discord-updates.json). **봇 토큰은 이 저장소에 절대 넣지 않는다**(맥 키체인에만).
+- **게시 도구가 이 저장소에 있다**(2026-10-23): `tools/discord_updates.py`(`status` · `sync` · `play`) · 훅 `.githooks/` · 플레이 고정 글 원고 [`docs/discord-play.md`](docs/discord-play.md). 쓰는 법은 [`docs/discord-updates.md`](docs/discord-updates.md). 맥에서만 디스코드에 쓸 수 있다(키체인). 서버 공통 글 · 게임 구역 만들기는 husky-puzzle 쪽 도구(`server` · `add-game`)가 맡는다. 서버에서 게임끼리는 동등하다(공통 글에 한 게임을 중심에 두지 않는다).
 
 ## 게임 구조
 | 경로 | 내용 |
