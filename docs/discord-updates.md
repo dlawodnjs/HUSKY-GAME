@@ -9,9 +9,9 @@
 |---|---|
 | `python3 tools/discord_updates.py status` | 아직 안 올린 커밋 수 |
 | `python3 tools/discord_updates.py sync --dry-run` | 올릴 글 미리 보기 |
-| `python3 tools/discord_updates.py sync` | `📜・메이커-업데이트`에 올리기(안 올린 커밋을 한 글로) |
+| `python3 tools/discord_updates.py sync` | `메이커-업데이트`에 올리기(안 올린 커밋을 한 글로) |
 | `python3 tools/discord_updates.py sync --notes <원고.md>` | 사람이 다듬은 원고로 올리기(원고가 안 올린 커밋 **전부**를 설명해야 한다) |
-| `python3 tools/discord_updates.py play --dry-run` · `play` | `🎮・메이커-플레이` 고정 글을 [discord-play.md](discord-play.md)대로 고치기(같은 글을 고친다) |
+| `python3 tools/discord_updates.py play --dry-run` · `play` | `메이커-플레이` 고정 글을 [discord-play.md](discord-play.md)대로 고치기(같은 글을 고친다) |
 | `python3 tools/discord_updates.py install` | 커밋 · 푸시 때 저절로 `sync`하는 훅 걸기(`.githooks/`). `--store-token`은 키체인에 봇 토큰을 새로 넣을 때만 |
 
 - 봇 토큰은 맥 키체인(`hucodi.husky.discord-updates`)에만 있다. **이 저장소는 공개라 토큰 · 서버 주소를 절대 적지 않는다.** 다른 운영체제는 `DISCORD_BOT_TOKEN` 환경변수. 클라우드 세션은 디스코드에 쓰지 못한다.

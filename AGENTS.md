@@ -12,7 +12,8 @@
 - **다른 도구에게 묻기**(교차 검토 · 다른 의견): Claude Code → Codex는 `/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex exec --sandbox read-only --ephemeral "<질문>"`(읽기만, 고치지 않음). 받은 답은 의견일 뿐이고 그대로 적용하지 않는다.
 
 ## 디스코드 업데이트 안내 (`Discord-Note`)
-- 디스코드 서버(HUCODi Studio)는 허스키 구출 퍼즐과 함께 쓴다. 이 게임의 업데이트 내역은 🐕 허스키 메이커 구역의 `📜・메이커-업데이트` 채널에 올라간다. 서버 구성 · 맥에서 하는 절차는 husky-puzzle의 `docs/discord-community.md`.
+- **이모티콘을 쓰지 않는다**(사용자 요청, 2026-10-23). 서버의 채널 · 카테고리 · 게시판 제목 · 안내글 · 게시글 · 기본 반응에 이모티콘을 넣지 않는다. 새 게임의 기본 채널 이름도 같은 규칙을 따른다.
+- 디스코드 서버(HUCODi Studio)는 허스키 구출 퍼즐과 함께 쓴다. 이 게임의 업데이트 내역은 허스키 메이커 구역의 `메이커-업데이트` 채널에 올라간다. 서버 구성 · 맥에서 하는 절차는 husky-puzzle의 `docs/discord-community.md`.
 - 커밋 메시지에 한 줄에 한 문장씩 적는다: `Discord-Note: [추가|개선|수정|안내] 한 문장`. 유저가 알아들을 말로(파일 이름 · 함수 이름 없이). 유저가 느낄 변화가 없는 커밋(문서 · 정리)은 적지 않거나 `[안내]`만.
 - 게시 형식(퍼즐의 "게시 형식 v1"과 같고 제목만 다르다): 제목 `허스키 메이커 · 개발 업데이트 · YYYY-MM-DD`, 본문은 `추가 → 개선 → 수정 → 안내` 순서의 구역 제목과 `- 문장` 목록. 빈 구역 · 중복 문장은 뺀다.
 - 채널 ID 등 설정은 [`tools/discord-updates.json`](tools/discord-updates.json). **봇 토큰은 이 저장소에 절대 넣지 않는다**(맥 키체인에만).
