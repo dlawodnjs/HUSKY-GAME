@@ -193,7 +193,7 @@ class PublishTests(unittest.TestCase):
         config.update({'play_channel_id':'play','sled_channel_id':'sled','feedback_channel_id':'fb'})
         self.config.write_text(json.dumps(config))
         guide = self.root/'play.md'
-        guide.write_text('설명\n<!-- 게시 시작 -->\n# 제목\n- 썰매는 {#sled}, 소식은 {#updates}\n<!-- 게시 끝 -->\n')
+        guide.write_text('설명\n<!-- 게시 시작 -->\n# 제목\n- 썰매는 {#sled|썰매 끌기}, 소식은 {#updates}\n<!-- 게시 끝 -->\n')
         calls = []
         def request(path, method='GET', body=None):
             calls.append((path, method, body))
@@ -215,7 +215,7 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(patches[0][0], '/channels/play/messages/777')
         embed = posts[0][2]['embeds'][0]
         self.assertEqual(embed['title'], '제목')
-        self.assertEqual(embed['description'], '- 썰매는 <#sled>, 소식은 <#channel>')
+        self.assertEqual(embed['description'], '- 썰매는 [썰매 끌기](https://discord.com/channels/guild/sled), 소식은 <#channel>')
         self.assertEqual(json.loads(self.config.read_text())['play_message_id'], '777')
 
 

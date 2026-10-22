@@ -384,7 +384,11 @@ def play(args):
     title, body = lines[start].lstrip('# ').strip(), '\n'.join(lines[start+1:end]).strip()
     channels = {key[:-11]: config[key] for key in config if key.endswith('_channel_id') and config[key]}
     channels['updates'] = config['channel_id']
-    body = re.sub(r'\{#(\w+)\}', lambda m: f'<#{channels[m.group(1)]}>', body)
+    def channel_link(match):
+        cid = channels[match.group(1)]
+        label = match.group(2)
+        return f"[{label}](https://discord.com/channels/{config['guild_id']}/{cid})" if label else f'<#{cid}>'
+    body = re.sub(r'\{#(\w+)(?:\|([^}]+))?\}', channel_link, body)
     content = {'embeds': [{'title': title, 'description': body, 'color': 5793266}],
                'allowed_mentions': {'parse': []}}
     if args.dry_run:
