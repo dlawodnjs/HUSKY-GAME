@@ -10,22 +10,7 @@ const screens = {
 const ui = {
     timeDisplay: document.getElementById('time-display'),
     gold: document.getElementById('stat-gold'),
-    hunger: document.getElementById('stat-hunger'),
-    stamina: document.getElementById('stat-stamina'),
-    stress: document.getElementById('stat-stress'),
-    fatigue: document.getElementById('stat-fatigue'),
-    obedience: document.getElementById('stat-obedience'),
-    wildness: document.getElementById('stat-wildness'),
-    affection: document.getElementById('stat-affection'),
-    strength: document.getElementById('stat-strength'),
-    gluttony: document.getElementById('stat-gluttony'),
-    charisma: document.getElementById('stat-charisma'),
-    agility: document.getElementById('stat-agility'),
-    hygiene: document.getElementById('stat-hygiene'),
-    intelligence: document.getElementById('stat-intelligence'),
-    sociality: document.getElementById('stat-sociality'),
-    courage: document.getElementById('stat-courage'),
-    scent: document.getElementById('stat-scent'),
+    statsPanel: document.getElementById('stats-panel'),
     huskyNameDisplay: document.getElementById('husky-name-display'),
     huskyStageDisplay: document.getElementById('husky-stage-display'),
     
@@ -52,6 +37,12 @@ const ui = {
     endingTitle: document.getElementById('ending-title'),
     endingDesc: document.getElementById('ending-desc'),
     endingImage: document.getElementById('ending-image'),
+    endingNew: document.getElementById('ending-new'),
+
+    codexModal: document.getElementById('codex-modal'),
+    codexList: document.getElementById('codex-list'),
+    codexCount: document.getElementById('codex-count'),
+    btnCloseCodex: document.getElementById('btn-close-codex'),
     
     huskyField: document.getElementById('husky-field'),
     huskyChar: document.getElementById('husky-character'),
@@ -61,25 +52,38 @@ const ui = {
 };
 
 // UI Functions
+// 스탯 패널을 data.js의 스탯 목록으로 한 번 그려 둠
+function renderStatsPanel() {
+    const section = (title, keys) => `
+        <h4 class="stats-section-title">${title}</h4>
+        <div class="stats-list">
+            ${keys.map(key => `
+                <div class="stat-row" title="${statDescKR[key]}">
+                    <span class="label">${statNamesKR[key]}</span>
+                    <div class="stat-bar"><div class="stat-bar-fill" id="bar-${key}"></div></div>
+                    <span class="value" id="stat-${key}"></span>
+                </div>`).join('')}
+        </div>`;
+    ui.statsPanel.innerHTML = section('컨디션', conditionStats) + section('성장 스탯', growthStats);
+}
+
+// 컨디션 중 높을수록 나쁜 게이지
+const badWhenHigh = ['hunger', 'stress', 'fatigue'];
+
 function updateStatsUI() {
     ui.gold.innerText = Math.floor(state.gold);
-    ui.hunger.innerText = Math.floor(state.hunger);
-    ui.stamina.innerText = Math.floor(state.stamina);
-    ui.stress.innerText = Math.floor(state.stress);
-    ui.fatigue.innerText = Math.floor(state.fatigue);
-    
-    ui.obedience.innerText = Math.floor(state.obedience);
-    ui.wildness.innerText = Math.floor(state.wildness);
-    ui.affection.innerText = Math.floor(state.affection);
-    ui.strength.innerText = Math.floor(state.strength);
-    ui.gluttony.innerText = Math.floor(state.gluttony);
-    ui.charisma.innerText = Math.floor(state.charisma);
-    ui.agility.innerText = Math.floor(state.agility);
-    ui.hygiene.innerText = Math.floor(state.hygiene);
-    ui.intelligence.innerText = Math.floor(state.intelligence);
-    ui.sociality.innerText = Math.floor(state.sociality);
-    ui.courage.innerText = Math.floor(state.courage);
-    ui.scent.innerText = Math.floor(state.scent);
+
+    [...conditionStats, ...growthStats].forEach(key => {
+        const value = Math.floor(state[key]);
+        document.getElementById(`stat-${key}`).innerText = value;
+        const bar = document.getElementById(`bar-${key}`);
+        bar.style.width = `${value}%`;
+        let danger = false;
+        if (badWhenHigh.includes(key)) danger = value > 70;
+        else if (conditionStats.includes(key)) danger = value < 30;
+        bar.classList.toggle('danger', danger);
+        bar.classList.toggle('growth', growthStats.includes(key));
+    });
     
     let month = Math.ceil(state.currentWeek / 4);
     let weekOfMonth = ((state.currentWeek - 1) % 4) + 1;
@@ -87,20 +91,6 @@ function updateStatsUI() {
     ui.timeDisplay.innerText = `${month}개월차 ${weekOfMonth}주차 ${dayStr}`;
     
     ui.huskyStageDisplay.innerText = state.isAdult ? '성견 허스키' : '아기 허스키';
-    
-    if (state.fatigue > 70 || state.stress > 70) {
-        ui.fatigue.style.color = '#ef4444';
-        ui.stress.style.color = '#ef4444';
-    } else {
-        ui.fatigue.style.color = '#374151';
-        ui.stress.style.color = '#374151';
-    }
-    
-    if (state.hunger > 70) {
-        ui.hunger.style.color = '#ef4444';
-    } else {
-        ui.hunger.style.color = '#374151';
-    }
     
     const fc = document.getElementById('furniture-container');
     if (fc) {
@@ -150,14 +140,14 @@ function renderScheduleUI() {
         
         if (state.isAdult) {
             if (state.obedience >= 30) availableActions.push(ActionType.ADVANCED_TRAIN);
-            if (state.agility >= 30) availableActions.push(ActionType.OBSTACLE_COURSE);
+            if (state.strength >= 30) availableActions.push(ActionType.OBSTACLE_COURSE);
             if (state.strength >= 40) availableActions.push(ActionType.SLED_PULLING);
             if (state.charisma >= 30) availableActions.push(ActionType.WORK_MODEL);
             if (state.intelligence >= 30) availableActions.push(ActionType.PUZZLE);
-            if (state.sociality >= 30) availableActions.push(ActionType.CAFE);
-            if (state.courage >= 30) availableActions.push(ActionType.NIGHT_WALK);
-            if (state.scent >= 30) availableActions.push(ActionType.TRUFFLE);
-            if (state.intelligence >= 60 && state.courage >= 60) availableActions.push(ActionType.GUARD_TRAINING);
+            if (state.charisma >= 20) availableActions.push(ActionType.CAFE);
+            if (state.wildness >= 40) availableActions.push(ActionType.NIGHT_WALK);
+            if (state.intelligence >= 40) availableActions.push(ActionType.TRUFFLE);
+            if (state.intelligence >= 60 && state.obedience >= 50) availableActions.push(ActionType.GUARD_TRAINING);
         }
         
         ui.scheduleOptions.innerHTML = '';
@@ -253,11 +243,51 @@ function updateHuskyExpressionFromStats() {
         huskyState.expression = 'tired';
     } else if (state.stress > 70) {
         huskyState.expression = 'stressed';
-    } else if (state.gluttony > 70) {
+    } else if (state.hunger > 70) {
         huskyState.expression = 'hungry';
     } else if (state.affection > 80 && Math.random() < 0.1) {
         huskyState.expression = 'happy';
     } else {
         huskyState.expression = 'neutral';
     }
+}
+
+// --- Ending Codex ---
+function formatCondition(cond) {
+    const value = Math.floor(state[cond.stat]);
+    const met = isConditionMet(cond);
+    const target = cond.min !== undefined ? `${cond.min} 이상` : `${cond.max} 이하`;
+    // 진행도: min 조건은 목표 대비 현재값, max 조건은 충족 여부만
+    const progress = cond.min !== undefined ? Math.min(value / cond.min, 1) * 100 : (met ? 100 : 0);
+    return `
+        <li class="codex-cond ${met ? 'met' : ''}">
+            <span>${statNamesKR[cond.stat]} ${target}</span>
+            <div class="stat-bar"><div class="stat-bar-fill" style="width:${progress}%"></div></div>
+            <span class="codex-cond-value">${value}</span>
+        </li>`;
+}
+
+function renderCodex() {
+    const unlocked = loadCodex();
+    ui.codexCount.innerText = `${endings.filter(e => unlocked.includes(e.id)).length} / ${endings.length}`;
+    ui.codexList.innerHTML = endings.map(ending => {
+        const open = unlocked.includes(ending.id);
+        const conditions = ending.conditions && ending.conditions.length > 0
+            ? `<ul class="codex-conds">${ending.conditions.map(formatCondition).join('')}</ul>`
+            : `<p class="codex-hint">${ending.hint}</p>`;
+        return `
+            <div class="codex-card ${open ? 'unlocked' : 'locked'} ${ending.bad ? 'bad' : ''}">
+                <div class="codex-icon">${open ? ending.icon : '❔'}</div>
+                <div class="codex-body">
+                    <h4>${open ? ending.title : '???'}</h4>
+                    ${open ? `<p class="codex-desc">${ending.desc}</p>` : ''}
+                    ${conditions}
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function openCodex() {
+    renderCodex();
+    ui.codexModal.classList.remove('hidden');
 }
