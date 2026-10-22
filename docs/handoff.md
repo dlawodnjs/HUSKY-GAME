@@ -18,6 +18,11 @@
 
 ---
 
+## 2026-10-23 · Claude Code(맥) · 디스코드 허스키 메이커 구역 열기 (커밋: e8fc9d1 · 이 기록이 든 커밋)
+- 한 일: HUCODi Studio에 🐕 허스키 메이커 구역(`📜・메이커-업데이트` 봇만 · `🎮・메이커-플레이` · `🛷・썰매-끌기` · `💬・메이커-피드백`)을 만들고 ID를 `tools/discord-updates.json`에 적었다. 첫 개발 업데이트(2026-10-23, 그때까지 커밋 12개)를 올리고, 플레이 방법 글을 고정했다(플레이 주소는 "준비 중"). 서버 안내 글에 메이커 한 줄을 더했다. 계획에 있던 `📣・공지`는 기존 `📢・공지사항`이 있어 만들지 않았다.
+- 남은 일: 플레이 주소가 정해지면 고정 글을 고친다(`play_message_id`). **이 저장소에는 게시 훅이 없다** — 사용자에게 보일 커밋을 한 뒤 맥의 husky-puzzle에서 `python3 tools/discord_updates.py --repo ../HUSKY-GAME sync`를 돌린다(`--dry-run`으로 먼저 보기).
+- 주의: 중복 방지 기록은 husky-puzzle 쪽 `.local/discord-updates/husky-maker/state.json`(맥에만). 이 기록 커밋은 게시됨으로 넣어 두어 다시 올라가지 않는다.
+
 ## 2026-10-23 · Claude Code(맥) · 협업 규칙을 main에 합침 (커밋: 이 기록이 든 커밋)
 - 한 일: 아래 기록의 브랜치 `claude/magical-knuth-z5f3yz`(de63d43)를 `main`에 빨리 감기로 합치고 푸시했다. 맥의 `~/Documents/claude_code/HUSKY-GAME` 폴더를 `main`으로 돌려 GitHub와 맞췄다. 게임 코드는 바꾸지 않았다.
 - 남은 일: 아래 기록의 디스코드 채널 만들기 · ID 적기는 그대로. 원격 브랜치 `claude/magical-knuth-z5f3yz`는 이제 `main`에 다 들어 있어 지워도 되지만, 지울지는 사용자가 정한다.
